@@ -1,6 +1,6 @@
-name: bak9
+name: bak8
 version: git
-summary: Creates a backup bak copy of a file
+summary: Rotational backup system for workstation users
 description: |
   bak [OPTIONS] FILE [DIR] [COMMAND]
 
@@ -36,12 +36,14 @@ platforms:
     build-for: [armhf]
 
 parts:
-  bak9:
+  bak:
     plugin: rust
     source: .
     build-attributes:
       - enable-patchelf
 
 apps:
-  bak9:
+  bak:
     command: bin/bak
+  bak8:
+    command: bin/bak8

@@ -1,0 +1,129 @@
+use super::*;
+use crate::paths::*;
+
+impl BackupJob {
+    /// Creates a backup run plan for a config item, consisting of a series of tasks to be performed in sequence.
+    /// May include a full or incremental backup, archiving (.tar.xz), and syncing of backups and archives to remotes.
+    pub fn plan(
+        backup_type: BackupType,
+        cfg_backup: &BackupConfigBackup,
+        config: &BackupConfig
+    ) -> Result<JobQueueEntry> {
+        let bak8_storage_dir = config.bak8_storage_dir();
+        let run_name = BackupRunName::new(datetime_now(), hostname(), username(), &cfg_backup.name);
+        let source_dir = cfg_backup.source_dir_path();
+        let dest_dir = Bak8Path::backup(&bak8_storage_dir, backup_type, &run_name);
+        let incremental_source_dir = if backup_type == BackupType::Incremental {
+            Some(find_last_backup(
+                BackupType::Full,
+                hostname(),
+                username(),
+                &cfg_backup.name,
+                &config.backup_storage_dir_path()
+            ).unwrap())
+        } else {
+            None
+        };
+
+        let archive_source_dir = &dest_dir;
+        let archive_dest_filepath = Bak8Path::archive(&bak8_storage_dir, &run_name);
+        let archive_run_name = &run_name;
+
+        let mut series = vec![
+            JobQueueEntry::Job {
+                job: Job::Backup(BackupJob {
+                    backup_type,
+                    run_name: run_name.clone(),
+                    source_dir: source_dir.clone(),
+                    incremental_source_dir: incremental_source_dir.as_ref().map(|p| p.to_path_buf()),
+                    dest_dir: dest_dir.clone(),
+                }),
+                status: JobStatus::Ready,
+                result: None
+        }];
+
+        if backup_type == BackupType::Full {
+            series.push(JobQueueEntry::Job {
+                job: Job::Archive(ArchiveJob {
+                    backup_run_name: archive_run_name.clone(),
+                    source_dir: archive_source_dir.to_path_buf(),
+                    dest_filepath: archive_dest_filepath.clone(),
+                }),
+                status: JobStatus::Ready,
+                result: None
+            });
+        }
+
+        for cfg_sync in &cfg_backup.syncs {
+            for cfg_remote in cfg_sync.remotes(config) {
+                match backup_type {
+                    BackupType::Full => {
+                        if cfg_sync.sync_full {
+                            series.push(JobQueueEntry::Job {
+                                job: Job::SyncBackup(SyncBackupJob {
+                                    remote: Remote {
+                                        name: cfg_remote.name.clone(),
+                                        host: cfg_remote.host.clone(),
+                                        user: cfg_remote.user.clone(),
+                                        platform: cfg_remote.platform,
+                                    },
+                                    backup_type: backup_type,
+                                    backup_run_name: run_name.clone(),
+                                    source_dir: source_dir.clone(),
+                                    remote_incremental_source_dir: None,
+                                    remote_backup_storage_dir: PathBuf::from(&cfg_remote.backup_storage_dir),
+                                    remote_dest_dir: Bak8Path::backup(&cfg_remote.backup_storage_dir,
+                                        backup_type, &run_name)
+                                }),
+                                status: JobStatus::Ready,
+                                result: None
+                            })
+                        }
+                        if cfg_sync.sync_archive {
+                            series.push(JobQueueEntry::Job {
+                                job: Job::SyncArchive(SyncArchiveJob {
+                                    remote: Remote {
+                                        name: cfg_remote.name.clone(),
+                                        host: cfg_remote.host.clone(),
+                                        user: cfg_remote.user.clone(),
+                                        platform: cfg_remote.platform,
+                                    },
+                                    backup_run_name: archive_run_name.clone(),
+                                    source_filepath: archive_dest_filepath.to_path_buf(),
+                                    remote_dest_filepath: Bak8Path::archive(&cfg_remote.backup_storage_dir, &archive_run_name)
+                                        .to_path_buf()
+                                }),
+                                status: JobStatus::Ready,
+                                result: None
+                            });
+                        }
+                    },
+                    BackupType::Incremental if cfg_sync.sync_incremental => {
+                        series.push(JobQueueEntry::Job {
+                            job: Job::SyncBackup(SyncBackupJob {
+                                remote: Remote {
+                                    name: cfg_remote.name.clone(),
+                                    host: cfg_remote.host.clone(),
+                                    user: cfg_remote.user.clone(),
+                                    platform: cfg_remote.platform,
+                                },
+                                remote_backup_storage_dir: PathBuf::from(&cfg_remote.backup_storage_dir),
+                                backup_type: backup_type,
+                                backup_run_name: run_name.clone(),
+                                source_dir: source_dir.clone(),
+                                remote_incremental_source_dir: Some(incremental_source_dir.as_ref().unwrap().to_path_buf()),
+                                remote_dest_dir: Bak8Path::backup_dir(&cfg_remote.backup_storage_dir,
+                                    BackupPathParts::from_run(backup_type, &run_name))
+                            }),
+                            status: JobStatus::Ready,
+                            result: None
+                        });
+                    },
+                    _ => {}
+                }
+            }
+        }
+
+        Ok(JobQueueEntry::Series(series))
+    }
+}

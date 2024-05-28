@@ -1,0 +1,38 @@
+[package]
+name = "bak8"
+version = "0.1.0"
+description = "Rotational backup system for workstation users"
+authors = ["Asmov LLC <development.pub@asmov.software>"]
+repository = "https://github.com/asmov/bak8"
+homepage = "https://github.com/asmov/bak8/tree/dev/packages/bak8"
+license = "AGPL-3.0-or-later"
+categories = ["command-line-utilities", "filesystem"]
+keywords = ["bak8", "backup", "copy"]
+edition = "2024"
+
+[dependencies]
+bak8-lib-os = { path = "../bak8-lib-os" }
+chrono = "0.4"
+cron = "0.15"
+hostname = "0.4"
+serde = { version = "1", features = ["derive"] }
+thiserror = "1"
+toml = "0.8"
+validator = { version = "0.20", features = ["derive"] }
+shellexpand = "2"
+colored = "2"
+clap = { version = "4", features = ["derive"] }
+lazy_static = "1"
+whoami = "1"
+strum = { version = "0.26", features = ["derive"] }
+strip-ansi-escapes = "0.2"
+tokio = "1"
+semver = "1"
+sha256 = "1"
+users = "0.11"
+
+[dev-dependencies]
+asmov-common-testing = "2"
+lazy_static = "1"
+dir-diff = "0.3"
+regex = "1"

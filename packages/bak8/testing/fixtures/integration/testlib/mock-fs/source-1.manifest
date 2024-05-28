@@ -1,0 +1,11 @@
+.
+./alpha
+./bravo
+./bravo/.betty
+./.config
+./.config/bak8
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./alpha/alpha.txt
+061b67d6e7ab579da2610e27e631aa4beda1ffe75c0a1b3f3f1c0b97780b4052  ./bravo/.betty/.betty
+b9dd960c1753459a78115d3cb845a57d924b6877e805b08bd01086ccdf34433c  ./.charlie
+586d67e2736ef0c75fb7353aef77bf265f92d7bcca5d67ca2f96ae930e1e6d7e  ./.config/bak8/bak8.toml
+4f4a9410ffcdf895c4adb880659e9b5c0dd1f23a30790684340b3eaacb045398  ./delta.txt

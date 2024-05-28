@@ -1,0 +1,13 @@
+[package]
+name = "bak8-lib-os"
+version = "0.2.0"
+description = "Platform specific library for bak8"
+authors = ["Asmov LLC <development.pub@asmov.software>"]
+repository = "https://github.com/asmov/bak8"
+homepage = "https://github.com/asmov/bak8/tree/dev/packages/bak8-lib-os"
+license = "AGPL-3.0-or-later"
+keywords = ["bak8"]
+edition = "2024"
+
+[dependencies]
+anyhow = "1"
