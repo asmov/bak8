@@ -1,11 +1,12 @@
 bak8
 ================================================================================
-*Keep your $HOME safe*  
+*$HOME is where the heart is.*
 
-The bak8 suite provides a rotational backup system for workstation users.  
+Bak8 provides backup tools, including a rotational backup system
+for workstation users.  
 
 
-[bak8](./cli/)
+[bak8](./packages/bak8/)
 --------------------------------------------------------------------------------
 [![Latest Version: bak8]][crates.io:bak8]
 
@@ -18,14 +19,14 @@ The bak8 suite provides a rotational backup system for workstation users.
 
 Manages a rotational backup system.
 
-Refer to the [bak8 project](./cli/) for more information.
+Refer to the [bak8 project](./packages/bak8/) for more information.
 
-[bak](./bak/)
+[bak](./packages/bak8-bak/)
 --------------------------------------------------------------------------------
-[![Latest Version: bak]][crates.io:bak8-bak]
+[![Latest Version: bak8-bak]][crates.io:bak8-bak]
 
-[Latest Version: bak]: https://img.shields.io/crates/v/bak8-bak.svg
-[crates.io:bak]: https://crates.io/crates/bak8-bak
+[Latest Version: bak8-bak]: https://img.shields.io/crates/v/bak8-bak.svg
+[crates.io:bak8-bak]: https://crates.io/crates/bak8-bak
 
 ### Usage
 
@@ -33,12 +34,12 @@ Refer to the [bak8 project](./cli/) for more information.
 
 Creates an adhoc backup `.bak` copy of **FILE**.
 
-Refer to the [bak project](./bak/) for more information.
+Refer to the [bak project](./packages/bak8-bak/) for more information.
 
 License (AGPL3)
 --------------------------------------------------------------------------------
 bak8: Rotational backup system for workstation users  
-Copyright (C) 2024 Asmov LLC  
+Copyright (C) 2024-2025 Asmov LLC  
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
