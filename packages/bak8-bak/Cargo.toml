@@ -15,7 +15,7 @@ name = "bak"
 path = "src/main.rs"
 
 [dependencies]
-bak8-lib-os = { path = "../bak8-lib-os" }
+bak8-lib-os = { version="0", path = "../bak8-lib-os" }
 clap = { version = "4", features = ["derive"] }
 colored = "3"
 file_diff = "1"

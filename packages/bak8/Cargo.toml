@@ -11,7 +11,7 @@ keywords = ["bak8", "backup", "copy"]
 edition = "2024"
 
 [dependencies]
-bak8-lib-os = { path = "../bak8-lib-os" }
+bak8-lib-os = { version="0", path = "../bak8-lib-os" }
 chrono = "0.4"
 cron = "0.15"
 hostname = "0.4"
