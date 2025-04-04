@@ -16,15 +16,15 @@ chrono = "0.4"
 cron = "0.15"
 hostname = "0.4"
 serde = { version = "1", features = ["derive"] }
-thiserror = "1"
+thiserror = "2"
 toml = "0.8"
 validator = { version = "0.20", features = ["derive"] }
-shellexpand = "2"
-colored = "2"
+shellexpand = "3"
+colored = "3"
 clap = { version = "4", features = ["derive"] }
 lazy_static = "1"
 whoami = "1"
-strum = { version = "0.26", features = ["derive"] }
+strum = { version = "0.27", features = ["derive"] }
 strip-ansi-escapes = "0.2"
 tokio = "1"
 semver = "1"
