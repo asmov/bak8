@@ -167,7 +167,6 @@ dependencies = [
  "strip-ansi-escapes",
  "strum",
  "thiserror 2.0.12",
- "tokio",
  "toml",
  "uzers",
  "validator",

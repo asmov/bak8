@@ -26,7 +26,6 @@ lazy_static = "1"
 whoami = "1"
 strum = { version = "0.27", features = ["derive"] }
 strip-ansi-escapes = "0.2"
-tokio = "1"
 semver = "1"
 sha256 = "1"
 uzers = "0.12"
