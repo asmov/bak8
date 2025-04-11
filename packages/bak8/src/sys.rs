@@ -4,18 +4,34 @@
 //!   - host: Owned by root:bak8usr if the group exists, otherwise current_user:current_user. Mode: 750
 //!   - user: Owned by user:user. Mode: 700
 
-use std::{borrow::Cow, sync::OnceLock};
+use std::{borrow::Cow, sync::{Arc, Mutex, OnceLock}};
 use uzers::{self, Users, Groups};
 use crate::{error::*, config::*};
 
 pub fn hostname() -> &'static str {
     static HOSTNAME: OnceLock<String> = OnceLock::new();
-    &HOSTNAME.get_or_init(|| whoami::fallible::hostname().unwrap())
+    &HOSTNAME.get_or_init(|| whoami::hostname().unwrap())
 }
 
 pub fn username() -> &'static str {
     static USERNAME: OnceLock<String> = OnceLock::new();
-    &USERNAME.get_or_init(|| whoami::username())
+    &USERNAME.get_or_init(|| {
+        let cache_lock = users_cache().lock().unwrap();
+        cache_lock.get_current_username().unwrap().to_string_lossy().to_string()
+    })
+}
+
+pub fn usergroup() -> &'static str {
+    static USERNAME: OnceLock<String> = OnceLock::new();
+    &USERNAME.get_or_init(|| {
+        let cache_lock = users_cache().lock().unwrap();
+        cache_lock.get_current_groupname().unwrap().to_string_lossy().to_string()
+    })
+}
+
+fn users_cache() -> &'static Arc<Mutex<uzers::UsersCache>> {
+    static CACHE: OnceLock<Arc<Mutex<uzers::UsersCache>>> = OnceLock::new();
+    &CACHE.get_or_init(|| Arc::new(Mutex::new(uzers::UsersCache::new())))
 }
 
 pub const GROUP_BAK8USR: &'static str = "bak8usr";
@@ -28,8 +44,8 @@ pub fn storage_admin_uid(config: &BackupConfig) -> Result<u32> {
             return None;
         };
 
-        let cache = uzers::UsersCache::new();
-        match cache.get_user_by_name(user as &str) {
+        let cache_lock = users_cache().lock().unwrap();
+        match cache_lock.get_user_by_name(user as &str) {
             Some(ref user) => Some(user.uid()),
             None => None,
         }
@@ -46,8 +62,8 @@ pub fn backup_users_gid(config: &BackupConfig) -> Result<u32> {
             return None;
         };
 
-        let cache = uzers::UsersCache::new();
-        match cache.get_group_by_name(group as &str) {
+        let cache_lock = users_cache().lock().unwrap();
+        match cache_lock.get_group_by_name(group as &str) {
             Some(ref group) => Some(group.gid()),
             None => None,
         }
@@ -57,11 +73,19 @@ pub fn backup_users_gid(config: &BackupConfig) -> Result<u32> {
 }
 
 pub fn uid() -> u32 {
-    uzers::get_current_uid()
+    static UID: OnceLock<u32> = OnceLock::new();
+    *UID.get_or_init(|| {
+        let cache_lock = users_cache().lock().unwrap();
+        cache_lock.get_current_uid()
+    })
 }
 
 pub fn gid() -> u32 {
-    uzers::get_current_gid()
+    static GID: OnceLock<u32> = OnceLock::new();
+    *GID.get_or_init(|| {
+        let cache_lock = users_cache().lock().unwrap();
+        cache_lock.get_current_gid()
+    })
 }
 
 pub fn expand_env(s: &str) -> Result<Cow<'_, str>> {

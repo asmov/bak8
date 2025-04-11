@@ -4,6 +4,7 @@ use std::{fs, sync::OnceLock, path::PathBuf};
 use chrono::Timelike;
 use asmov_common_testing::{self as testing, prelude::*};
 use bak8;
+use whoami;
 
 pub(crate) const STRG_BAK8: &'static str = "strg/bak8";
 pub(crate) const TESTLIB: &'static str = "testlib";
@@ -61,11 +62,12 @@ pub(crate) fn make_scheduled_backup_cli(_test: &testing::Test) -> bak8::cli::Cli
 
 pub(crate) fn make_config(test: &testing::Test, source_version: u8) -> bak8::config::BackupConfig {
     let username = bak8::sys::username();
+    let usergroup = bak8::sys::usergroup();
     bak8::config::BackupConfig {
         backup_storage_dir: test.temp_dir().join(STRG_BAK8)
             .to_str().unwrap().to_string(),
         storage_admin_user: username.to_string(),
-        backup_users_group: username.to_string(),
+        backup_users_group: usergroup.to_string(),
         schedules: vec![
             bak8::config::BackupConfigSchedule {
                 name: "minutely".to_string(),
@@ -220,8 +222,8 @@ pub(crate) fn expected_backup_ouput_dir(test: &testing::Test, backup_type: bak8:
     test.temp_dir()
         .join(STRG_BAK8)
         .join(backup_type.subdir_name())
-        .join(hostname::get().unwrap())
-        .join(whoami::username())
+        .join(whoami::hostname().unwrap())
+        .join(whoami::username().unwrap())
         .join(output.run_name.datetime.format("%Y").to_string())
         .join(output.run_name.datetime.format("%m").to_string())
         .join(output.run_name.datetime.format("%d").to_string())
@@ -239,8 +241,8 @@ pub(crate) fn assert_remote_backup_synced(
 
     let expected_dir = PathBuf::from(&remote_cfg.backup_storage_dir)
         .join(backup_type.subdir_name())
-        .join(hostname::get().unwrap())
-        .join(whoami::username())
+        .join(whoami::hostname().unwrap())
+        .join(whoami::username().unwrap())
         .join(output.backup_run_name.datetime.format("%Y").to_string())
         .join(output.backup_run_name.datetime.format("%m").to_string())
         .join(output.backup_run_name.datetime.format("%d").to_string())
@@ -269,8 +271,8 @@ pub(crate) fn assert_remote_archive_synced(
 
     let expected_filepath = PathBuf::from(&remote_cfg.backup_storage_dir)
         .join(bak8::paths::consts::BACKUP_ARCHIVE_DIRNAME)
-        .join(hostname::get().unwrap())
-        .join(whoami::username())
+        .join(whoami::hostname().unwrap())
+        .join(whoami::username().unwrap())
         .join(output.backup_run_name.datetime.format("%Y").to_string())
         .join(output.backup_run_name.datetime.format("%m").to_string())
         .join(output.backup_run_name.datetime.format("%d").to_string())
@@ -280,8 +282,8 @@ pub(crate) fn assert_remote_archive_synced(
 
     let expected_checksum_filepath = PathBuf::from(&remote_cfg.backup_storage_dir)
         .join(bak8::paths::consts::BACKUP_ARCHIVE_DIRNAME)
-        .join(hostname::get().unwrap())
-        .join(whoami::username())
+        .join(whoami::hostname().unwrap())
+        .join(whoami::username().unwrap())
         .join(output.backup_run_name.datetime.format("%Y").to_string())
         .join(output.backup_run_name.datetime.format("%m").to_string())
         .join(output.backup_run_name.datetime.format("%d").to_string())
