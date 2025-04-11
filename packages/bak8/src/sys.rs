@@ -5,7 +5,7 @@
 //!   - user: Owned by user:user. Mode: 700
 
 use std::{borrow::Cow, sync::OnceLock};
-use users::{self, Users, Groups};
+use uzers::{self, Users, Groups};
 use crate::{error::*, config::*};
 
 pub fn hostname() -> &'static str {
@@ -28,7 +28,7 @@ pub fn storage_admin_uid(config: &BackupConfig) -> Result<u32> {
             return None;
         };
 
-        let cache = users::UsersCache::new();
+        let cache = uzers::UsersCache::new();
         match cache.get_user_by_name(user as &str) {
             Some(ref user) => Some(user.uid()),
             None => None,
@@ -46,7 +46,7 @@ pub fn backup_users_gid(config: &BackupConfig) -> Result<u32> {
             return None;
         };
 
-        let cache = users::UsersCache::new();
+        let cache = uzers::UsersCache::new();
         match cache.get_group_by_name(group as &str) {
             Some(ref group) => Some(group.gid()),
             None => None,
@@ -57,11 +57,11 @@ pub fn backup_users_gid(config: &BackupConfig) -> Result<u32> {
 }
 
 pub fn uid() -> u32 {
-    users::get_current_uid()
+    uzers::get_current_uid()
 }
 
 pub fn gid() -> u32 {
-    users::get_current_gid()
+    uzers::get_current_gid()
 }
 
 pub fn expand_env(s: &str) -> Result<Cow<'_, str>> {

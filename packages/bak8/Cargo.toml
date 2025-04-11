@@ -29,7 +29,7 @@ strip-ansi-escapes = "0.2"
 tokio = "1"
 semver = "1"
 sha256 = "1"
-users = "0.11"
+uzers = "0.12"
 
 [dev-dependencies]
 asmov-common-testing = "2"
