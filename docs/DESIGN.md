@@ -28,10 +28,10 @@ The user maintains a configuration file that defines:
 - how many incremental backups should be made before another full backup,
 - how to zip backups,
 - how to encrypt zipped backups,
-- which remote servers should backups to be sync'd to (via SSH),
+- which remote servers should backups be sync'd to (via SSH),
 - and how many incremental and full backups to store before pruning.
 
-With this configuration, normal usage of the bak8 command will
+With this configuration, normal usage of the `bak8` command will
 perform any operations necessary when ran, based on schedule. After the user
 sets up their configuration, it's basically hands-off.
 
