@@ -1,4 +1,4 @@
-bak8
+Bak8
 ================================================================================
 [![Latest Version: bak8]][crates.io:bak8]
 
@@ -69,4 +69,4 @@ along with this program.  If not, see https://www.gnu.org/licenses/.
 
 Trademark
 --------------------------------------------------------------------------------
-*bak8* is a trademark of Asmov LLC.
+*bak8* is a pending trademark of Asmov LLC.

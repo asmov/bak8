@@ -1,9 +1,15 @@
-bak8
+Bak8
 ================================================================================
-*$HOME is where the heart is.*
+*Rotational backup system for workstation users*
 
-Bak8 provides backup tools, including a rotational backup system
-for workstation users.  
+**Bak8** is a rotational backup system focused on providing workstation users
+with easily accessible daily backups of their home directories. Backups
+can be configured to be archived, encrypted, and securely synchronized
+across multiple devices and cloud storage providers.
+
+The Bak8 software suite includes the following filesystem backup tools:
+- [bak8](#bak8) Manages a rotational backup system
+- [bak](#bak) Creates an adhoc `.bak` copy of a file
 
 
 [bak8](./packages/bak8/)
@@ -52,9 +58,9 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 
 You should have received a [copy](./LICENSE-AGPL-3.txt) of the GNU Affero General Public License
-along with this program.  If not, see [https://www.gnu.org/licenses/].
+along with this program.  If not, see https://www.gnu.org/licenses/.
 
 
 Trademark
 --------------------------------------------------------------------------------
-*bak8* is a trademark of Asmov LLC.
+*bak8* is a pending trademark of Asmov LLC.

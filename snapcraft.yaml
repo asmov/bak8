@@ -2,23 +2,9 @@ name: bak8
 version: git
 summary: Rotational backup system for workstation users
 description: |
-  bak [OPTIONS] FILE [DIR] [COMMAND]
+  Bak8 is a rotational backup system focused on providing workstation users with easily accessible daily backups of their home directories.
 
-  Creates a backup .bak copy of FILE.
-
-  If DIR is not specified, the copy is created in the same directory as FILE.
-
-  If DIR is specified as -, or if the user lacks permissions to copy to DIR, the user's app data directory will be used instead.
-
-  If multiple backups of FILE exist, the rotating filename extension used will be: .bak.N
-
-  The most recent rotating backup will always be: .bak.0
-
-  Pruning of rotating backups occurs after -n NUM copies.
-
-  If the current backup is no different than its predecessor, copying will be skipped.
-
-  Additional COMMANDs may be appended to list, compare, or delete backups.
+  Backups can be configured to be archived, encrypted, and securely synchronized across multiple devices and cloud storage providers.
 
 
 base: core24
@@ -38,9 +24,15 @@ platforms:
 parts:
   bak:
     plugin: rust
-    source: .
+    source: ./packages/bak
     build-attributes:
       - enable-patchelf
+  bak8:
+      plugin: rust
+      source: ./packages/bak8
+      build-attributes:
+        - enable-patchelf
+
 
 apps:
   bak:

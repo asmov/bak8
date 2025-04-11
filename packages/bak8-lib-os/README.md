@@ -14,8 +14,8 @@ If an issue does not exist, create one and tell us how to reproduce the bug.
 
 License (AGPL3)
 --------------------------------------------------------------------------------
-bak8-lib-os: Platform specific library for bak8  
-Copyright (C) 2025 Asmov LLC  
+bak8-lib-os: Platform specific library for Bak8  
+Copyright (C) 2025 [Asmov LLC](https://asmov.software)  
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -33,4 +33,4 @@ If not, see https://www.gnu.org/licenses/.
 
 Trademark
 --------------------------------------------------------------------------------
-*bak8* is a trademark of Asmov LLC.
+*bak8* is a pending trademark of Asmov LLC.

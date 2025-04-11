@@ -1,11 +1,11 @@
-bak8: bak
+Bak8: Bak
 ================================================================================
 [![Latest Version]][crates.io]
 
 [Latest Version]: https://img.shields.io/crates/v/bak8-bak.svg
 [crates.io]: https://crates.io/crates/bak8-bak
 
-Creates a backup `.bak` copy of a file.
+Creates an adhoc backup `.bak` copy of a file.
 
 
 Usage
@@ -13,7 +13,7 @@ Usage
 
 `bak [OPTIONS] FILE [DIR] [COMMAND]`
 
-Creates a backup `.bak` copy of **FILE**.
+Creates an adhoc backup `.bak` copy of **FILE**.
 
 If **DIR** is not specified, the copy is created in the same directory as FILE.
 
@@ -64,7 +64,7 @@ If an issue does not exist, create one and tell us how to reproduce the bug.
 
 License (AGPL3)
 --------------------------------------------------------------------------------
-bak8-bak: Creates a backup `.bak` copy of a file.  
+bak8-bak: Creates an adhoc backup `.bak` copy of a file.  
 Copyright (C) 2024-2025 Asmov LLC  
 
 This program is free software: you can redistribute it and/or modify
@@ -83,4 +83,4 @@ along with this program.  If not, see https://www.gnu.org/licenses/.
 
 Trademark
 --------------------------------------------------------------------------------
-*bak8* is a trademark of Asmov LLC.
+*bak8* is a pending trademark of Asmov LLC.
