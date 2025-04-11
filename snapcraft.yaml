@@ -22,20 +22,20 @@ platforms:
     build-for: [armhf]
 
 parts:
-  bak:
+  bak8:
     plugin: rust
-    source: ./packages/bak
+    source: .
     build-attributes:
       - enable-patchelf
-  bak8:
-      plugin: rust
-      source: ./packages/bak8
-      build-attributes:
-        - enable-patchelf
-
+    stage-packages:
+      - rsync
+      - tar
+      - xz-utils
+      - gpg
+      - ssh
 
 apps:
-  bak:
-    command: bin/bak
   bak8:
-    command: bin/bak8
+    command: bak8
+  bak:
+    command: bak

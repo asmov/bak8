@@ -35,7 +35,7 @@ With this configuration, normal usage of the `bak8` command will
 perform any operations necessary when ran, based on schedule. After the user
 sets up their configuration, it's basically hands-off.
 
-Most operations fork child processes to make use of system commands:
+Most operations make use of system commands:
 - `rsync`
 - `tar` (with `xz`)
 - `gpg`
