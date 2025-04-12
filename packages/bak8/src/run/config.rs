@@ -1,4 +1,5 @@
 use std::{fs, io::Write, path::Path};
+use bak8_lib_os::prelude::*;
 use colored::Colorize;
 use crate::{error::*, log::*, config::*, cli::*, paths::*};
 
@@ -64,7 +65,7 @@ fn confirm(question: &str) -> Result<bool> {
 fn run_config_edit(config_path: &Path) -> Result<bool> {
     eprintln!("Launching editor for config file: {}", config_path.tikn_path());
 
-    let output = bak8_lib_os::run_best_editor(config_path, false)
+    let output = PLATFORM.run_best_editor(config_path, false)
         .map_err(|e| Error::Generic(format!("Failed to run editor :: {e}")))?
         .unwrap_output();
 

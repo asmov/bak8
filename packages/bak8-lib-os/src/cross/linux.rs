@@ -2,25 +2,30 @@ use std::{env, path::Path, process};
 use anyhow::anyhow;
 use crate::{E_STR, CommandReturn};
 
+use super::CrossPlatform;
+
 const ENV_XDG_SESSION_TYPE: &str = "XDG_SESSION_TYPE";
 const WHICH: &str = "which";
 
-pub(crate) fn is_gui() -> bool {
-    env::var(ENV_XDG_SESSION_TYPE).is_ok()
-}
+pub struct LinuxCrossPlatform;
+impl CrossPlatform for LinuxCrossPlatform {
+    fn in_terminal(&self) -> bool {
+        env::var(ENV_XDG_SESSION_TYPE).is_err()
+    }
 
-pub(crate) fn run_best_editor(file: &Path, child_process: bool) -> anyhow::Result<CommandReturn> {
-    let editor_cmd = if is_gui() {
-        xdg_open_command(file)
-    } else if let Some(cmd) = editor_command(file) {
-        cmd
-    } else if let Some(cmd) = guess_editor_command(file) {
-        cmd
-    } else {
-        return Err(anyhow!("No editor found"))
-    };
+    fn run_best_editor(&self, file: &Path, child_process: bool) -> anyhow::Result<CommandReturn> {
+        let editor_cmd = if !self.in_terminal() {
+            xdg_open_command(file)
+        } else if let Some(cmd) = editor_command(file) {
+            cmd
+        } else if let Some(cmd) = guess_editor_command(file) {
+            cmd
+        } else {
+            return Err(anyhow!("No editor found"))
+        };
 
-    CommandReturn::run(editor_cmd, child_process)
+        CommandReturn::run(editor_cmd, child_process)
+    }
 }
 
 fn xdg_open_command(file: &Path) -> process::Command {
@@ -38,7 +43,7 @@ fn editor_command(file: &Path) -> Option<process::Command> {
     if !which_editor.status.success() || which_editor.stdout.is_empty() {
         return None;
     }
-    
+
     let editor_path = String::from_utf8(which_editor.stdout).expect(E_STR);
     let mut cmd = process::Command::new(editor_path.trim());
     cmd.arg(file);
@@ -61,12 +66,12 @@ fn guess_editor_command(file: &Path) -> Option<process::Command> {
         if !which_guess.status.success() || which_guess.stdout.is_empty() {
             continue;
         }
-        
+
         let editor_path = String::from_utf8(which_guess.stdout).expect(E_STR);
         let mut cmd = process::Command::new(editor_path.trim());
         cmd.arg(file);
         return Some(cmd)
     }
-    
+
     None
 }

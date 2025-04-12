@@ -1,11 +1,10 @@
-#[cfg(target_os = "linux")]
-pub mod linux;
-#[cfg(target_os = "macos")]
-pub mod macos;
-#[cfg(target_os = "windows")]
-pub mod windows;
+pub mod cross;
 
 use std::{process, env, fs, io, path::{Path, PathBuf}};
+
+pub mod prelude {
+    pub use super::cross::{CrossPlatform, PLATFORM};
+}
 
 const E_STR: &str = "Failed to convert to string";
 
@@ -130,27 +129,6 @@ fn macos_user_app_data_dir() -> io::Result<PathBuf> {
 
 }
 
-pub fn is_gui() -> bool {
-    #[cfg(target_os = "linux")]
-    return linux::is_gui();
-    #[cfg(target_os = "macos")]
-    return macos::is_gui();
-    #[cfg(target_os = "windows")]
-    return windows::is_gui();
-    #[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "windows")))]
-    unimplemented!(E_UNSUPPORTED_OS)
-}
-
-pub fn run_best_editor(file: &Path, child_process: bool) -> anyhow::Result<CommandReturn> {
-    #[cfg(target_os = "linux")]
-    return linux::run_best_editor(file, child_process);
-    #[cfg(target_os = "macos")]
-    return macos::run_best_editor(file, child_process);
-    #[cfg(target_os = "windows")]
-    return windows::run_best_editor(file, child_process);
-    #[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "windows")))]
-    unimplemented!(E_UNSUPPORTED_OS)
-}
 pub enum CommandReturn {
     Output(process::Output),
     Child(process::Child),
