@@ -14,6 +14,7 @@ mod unsupported;
 
 pub trait CrossPlatform {
     fn in_terminal(&self) -> bool;
+    fn copy_file(&self, source: &Path, dest: &Path) -> std::io::Result<()>;
     fn run_best_editor(&self, file: &Path, child_process: bool) -> anyhow::Result<CommandReturn>;
 }
 
@@ -33,6 +34,11 @@ impl<OS: CrossPlatform> CrossPlatform for Platform<OS> {
     #[inline]
     fn in_terminal(&self) -> bool {
         self.os.in_terminal()
+    }
+
+    #[inline]
+    fn copy_file(&self, source: &Path, dest: &Path) -> std::io::Result<()> {
+        self.os.copy_file(source, dest)
     }
 
     #[inline]

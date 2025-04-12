@@ -26,6 +26,11 @@ impl CrossPlatform for LinuxCrossPlatform {
 
         CommandReturn::run(editor_cmd, child_process)
     }
+
+    fn copy_file(&self, source: &Path, dest: &Path) -> std::io::Result<()> {
+        linux_cp(source, dest)
+            .or_else(|_| std::fs::copy(source, dest).map(|_| ()))
+    }
 }
 
 fn xdg_open_command(file: &Path) -> process::Command {
@@ -74,4 +79,19 @@ fn guess_editor_command(file: &Path) -> Option<process::Command> {
     }
 
     None
+}
+
+fn linux_cp(source: &Path, dest: &Path) -> std::io::Result<()> {
+    let output = std::process::Command::new("cp")
+        .arg("--preserve")
+        .arg(source)
+        .arg(dest)
+        .output()
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+
+    if output.status.success() {
+        Ok(())
+    } else {
+        Err(std::io::Error::new(std::io::ErrorKind::Other, String::from_utf8_lossy(&output.stderr).to_string()))
+    }
 }

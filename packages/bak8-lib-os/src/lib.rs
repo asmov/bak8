@@ -20,33 +20,6 @@ pub fn sanitize_cmd_path(path: &Path) -> &str {
     }
 }
 
-pub fn copy_file(source: &Path, dest: &Path) -> io::Result<()> {
-    #[cfg(target_os = "linux")]
-    match linux_cp(source, dest) {
-        Ok(_) => return Ok(()),
-        Err(_) => {}, // fallback
-    }
-
-    fs::copy(source, dest)
-        .map(|_| ())
-}
-
-#[cfg(target_os = "linux")]
-fn linux_cp(source: &Path, dest: &Path) -> io::Result<()> {
-    let output = std::process::Command::new("cp")
-        .arg("--preserve")
-        .arg(source)
-        .arg(dest)
-        .output()
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
-
-    if output.status.success() {
-        Ok(())
-    } else {
-        Err(io::Error::new(io::ErrorKind::Other, String::from_utf8_lossy(&output.stderr).to_string()))
-    }
-}
-
 /// Retrieves the bak8 data directory if possible, otherwise None.
 pub fn user_app_data_dir(mkdir: bool, app_subdirs: PathBuf) -> io::Result<PathBuf> {
     #[cfg(target_os = "linux")]

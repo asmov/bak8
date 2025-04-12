@@ -32,6 +32,7 @@ use clap::Parser;
 use file_diff;
 use thiserror;
 use colored::Colorize;
+use bak8_lib_os::prelude::*;
 
 pub const BAK8: &str = "bak8";
 const BAK: &str = "bak";
@@ -396,7 +397,7 @@ fn run_backup(cli: &cli::Cli) -> Result<(), Error> {
         None => return Ok(())
     };
 
-    match os::copy_file(&cli.file, &bak_filepath) {
+    match PLATFORM.copy_file(&cli.file, &bak_filepath) {
         Ok(_) => Ok(()),
         Err(e) if e.kind() == std::io::ErrorKind::PermissionDenied && !is_app_data_dir => {
             let app_data_dir = os::user_app_data_dir(true, BAK8.into())
@@ -409,7 +410,7 @@ fn run_backup(cli: &cli::Cli) -> Result<(), Error> {
                 None => return Ok(())
             };
 
-            os::copy_file(&cli.file, &home_bak_filepath)
+            PLATFORM.copy_file(&cli.file, &home_bak_filepath)
                 .map_err(|_| Error::copy(&cli.file, &home_bak_filepath, e))?;
 
             if !cli.quiet {
