@@ -26,6 +26,7 @@ mod tests {
 
     #[test]
     #[named]
+    #[ignore = "Requires an SSH server to be set up as sshd_test. Run manually."]
     fn test_full_sync() {
         let test = TESTING
             .test(function_name!())

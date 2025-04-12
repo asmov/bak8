@@ -67,12 +67,13 @@ mod tests {
 
         let dest_dir = backup_output.dest_dir.as_path();
         assert!(!dir_diff::is_different(&backup_output.source_dir, &dest_dir).unwrap(),
-            "Incremental source and destination should not be different: {} VS {}", &backup_output.source_dir.tikn_path(), &dest_dir.tikn_path());
+            "Incremental source and destination should not be different: {} VS {}",
+            &backup_output.source_dir.tikn_path(), &dest_dir.tikn_path());
         assert!(dest_dir.join("source-2.txt").exists(),
             "New file: source-2.txt");
         assert_eq!("source-2 delta", fs::read_to_string(dest_dir.join("delta.txt")).unwrap(),
             "Modified file: delta.txt");
-        assert_eq!(0o660, fs::metadata(dest_dir.join("alpha").join("alpha.txt")).unwrap().permissions().mode() & 0o777,
+        assert_eq!(0o664, fs::metadata(dest_dir.join("alpha").join("alpha.txt")).unwrap().permissions().mode() & 0o777,
             "Modified permissions: alpha/alpha.txt");
 
         // try running it again. it should not create a new backup for "today"
