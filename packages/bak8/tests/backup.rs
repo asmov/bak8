@@ -4,24 +4,21 @@ mod testlib;
 mod tests {
     use std::fs;
     use std::os::unix::fs::PermissionsExt;
-    use asmov_common_testing::{self as testing, prelude::*};
+    use sourcetrait_testing::{self as testing, prelude::*};
     use bak8::log::TikPath;
     use bak8::job::*;
     use super::testlib::{self, TestlibModuleBuilder};
 
-    static TESTING: testing::StaticModule = testing::module(|| {
-        testing::integration(module_path!())
-            .testlib_module_defaults()
-            .using_temp_dir()
-            .build()
+    static TESTING: testing::Module = testing::module!(Integration, {
+        .testlib_module_defaults()
+        .using_temp_dir()
     });
 
-    #[named]
-    #[test]
+    #[tested]
     fn test_scheduled_full() {
-        let test = TESTING.test(function_name!())
+        let test = testing::test!({
             .using_temp_dir()
-            .build();
+        });
 
         let config = testlib::make_config(&test, 1);
         testlib::setup_backup_dir(&test, &config);
@@ -46,13 +43,12 @@ mod tests {
         assert_eq!(0, results.len());
     }
 
-    #[named]
-    #[test]
+    #[tested]
     fn test_scheduled_incremental() {
-        let test = TESTING.test(function_name!())
+        let test = testing::test!({
             .using_temp_dir()
             .setup(testlib::setup_incremental_backup_test)
-            .build();
+        });
 
         // full backup was ran during test.setup(). now run an incremental ...
         let cli = testlib::make_scheduled_backup_cli(&test);
@@ -73,7 +69,11 @@ mod tests {
             "New file: source-2.txt");
         assert_eq!("source-2 delta", fs::read_to_string(dest_dir.join("delta.txt")).unwrap(),
             "Modified file: delta.txt");
-        assert_eq!(0o664, fs::metadata(dest_dir.join("alpha").join("alpha.txt")).unwrap().permissions().mode() & 0o777,
+        
+        let source_perms = fs::metadata(backup_output.source_dir.join("alpha").join("alpha.txt"))
+            .unwrap().permissions().mode() & 0o777;
+        
+        assert_eq!(source_perms, fs::metadata(dest_dir.join("alpha").join("alpha.txt")).unwrap().permissions().mode() & 0o777,
             "Modified permissions: alpha/alpha.txt");
 
         // try running it again. it should not create a new backup for "today"

@@ -3,13 +3,11 @@ mod testlib;
 #[cfg(test)]
 mod tests {
     use super::testlib::{self, TestlibModuleBuilder};
-    use asmov_common_testing::{self as testing, prelude::*};
+    use sourcetrait_testing::{self as testing, prelude::*};
 
-    static TESTING: testing::StaticModule = testing::module(|| {
-        testing::integration(module_path!())
+    static TESTING: testing::Module = testing::module!(Integration, {
             .testlib_module_defaults()
             .using_temp_dir()
-            .build()
     });
 
     fn setup_sync_test(
@@ -24,15 +22,13 @@ mod tests {
     //    testlib::teardown_test_remote(cfg_remote);
     //}
 
-    #[test]
-    #[named]
+    #[tested]
     #[ignore = "Requires an SSH server to be set up as sshd_test. Run manually."]
     fn test_full_sync() {
-        let test = TESTING
-            .test(function_name!())
+        let test = testing::test!({
             .using_temp_dir()
             //.teardown(|test| teardown_sync_test(test, &cfg_remote))
-            .build();
+        });
 
         let config = testlib::make_config(&test, 1);
         let cfg_remote = testlib::setup_test_remote(&config);

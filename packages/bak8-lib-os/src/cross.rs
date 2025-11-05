@@ -16,6 +16,7 @@ pub trait CrossPlatform {
     fn in_terminal(&self) -> bool;
     fn copy_file(&self, source: &Path, dest: &Path) -> std::io::Result<()>;
     fn run_best_editor(&self, file: &Path, child_process: bool) -> anyhow::Result<CommandReturn>;
+    fn get_primary_user_group(&self) -> anyhow::Result<String>;
 }
 
 pub struct Platform<OS: CrossPlatform> {
@@ -45,12 +46,17 @@ impl<OS: CrossPlatform> CrossPlatform for Platform<OS> {
     fn run_best_editor(&self, file: &Path, child_process: bool) -> anyhow::Result<CommandReturn> {
         self.os.run_best_editor(file, child_process)
     }
+    
+    #[inline]
+    fn get_primary_user_group(&self) -> anyhow::Result<String> {
+        self.os.get_primary_user_group()
+    }
 }
 
 #[cfg(target_os = "linux")]
 pub const PLATFORM: Platform<linux::LinuxCrossPlatform> = Platform::new(linux::LinuxCrossPlatform);
 #[cfg(target_os = "macos")]
-pub const PLATFORM: Platform<macos::LinuxCrossPlatform> = Platform::new(macos::LinuxCrossPlatform);
+pub const PLATFORM: Platform<macos::MacOsCrossPlatform> = Platform::new(macos::MacOsCrossPlatform);
 #[cfg(target_os = "windows")]
 pub const PLATFORM: Platform<windows::LinuxCrossPlatform> = Platform::new(windows::LinuxCrossPlatform);
 #[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "windows")))]

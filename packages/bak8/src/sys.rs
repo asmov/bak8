@@ -5,6 +5,7 @@
 //!   - user: Owned by user:user. Mode: 700
 
 use std::{borrow::Cow, sync::{Arc, Mutex, OnceLock}};
+use bak8_lib_os::prelude::*;
 use uzers::{self, Users, Groups};
 use crate::{error::*, config::*};
 
@@ -88,7 +89,16 @@ pub fn gid() -> u32 {
     })
 }
 
+/// We perform a custom lookup for $GROUP if it can't be expanded
 pub fn expand_env(s: &str) -> Result<Cow<'_, str>> {
-    shellexpand::env(s)
-        .map_err(|e| Error::Generic(format!("Unable to expand environment variables for: {s} :: {}", e)))
+    match shellexpand::env(s) {
+        Ok(s) => Ok(s),
+        Err(_) if s == "$GROUP" => {
+            match PLATFORM.get_primary_user_group() {
+                Ok(group) => Ok(Cow::Owned(group)),
+                Err(_) => Err(Error::Generic(format!("Unable to determine primary user group for $GROUP")))
+            }
+        },
+        Err(e) => Err(Error::Generic(format!("Unable to expand environment variables for: {s} :: {}", e)))
+    }
 }

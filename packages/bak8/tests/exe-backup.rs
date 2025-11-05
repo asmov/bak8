@@ -3,17 +3,17 @@ mod testlib;
 #[cfg(test)]
 mod tests {
     use std::{path::PathBuf, process, sync::OnceLock};
-    use asmov_common_testing::{self as testing, prelude::*};
-    use bak8::paths::{self, Bak8Path};
+    use sourcetrait_testing::{self as testing, prelude::*};
+    use bak8::{paths::{self, Bak8Path}, sys::GROUP_BAK8USR};
+    use crate::testlib::GROUP_TESTLIB;
+
     use super::testlib::{self, TestlibModuleBuilder};
 
     const BIN_EXE: &str = env!("CARGO_BIN_EXE_bak8");
 
-    static TESTING: testing::StaticModule = testing::module(|| {
-        testing::integration(module_path!())
+    static TESTING: testing::Module = testing::module!(Integration, {
             .testlib_module_defaults()
             .using_temp_dir()
-            .build()
     });
 
     fn exe_bak8<S>(
@@ -25,7 +25,7 @@ mod tests {
     where
         S: AsRef<std::ffi::OsStr>
     {
-        let mock_root = test.imported_fixture_dir(&testlib::testlib_namepath())
+        let mock_root = GROUP_TESTLIB.fixture_dir()
             .join(testlib::MOCK_FS_DIRNAME)
             .join(format!("{}{source_num}", testlib::SOURCE_PREFIX));
         let output = process::Command::new(BIN_EXE)
@@ -60,12 +60,11 @@ mod tests {
         results
     }
 
-    #[named]
-    #[test]
+    #[tested]
     fn test_help() {
-        let test = TESTING.test(function_name!())
+        let test = testing::test!({
             .using_temp_dir()
-            .build();
+        });
 
         let (stdout, stderr) = exe_bak8(&test, 1, Some(true), &["backup", "--help"]);
         assert!(stdout.contains("Usage: bak8 backup "));
@@ -77,26 +76,24 @@ mod tests {
         Bak8Path::StorageDir(test.temp_dir().join(testlib::STRG_BAK8)).setup(&config).unwrap();
     }
 
-    #[named]
-    #[test]
+    #[tested]
     fn test_scheduled() {
-        let test = TESTING.test(function_name!())
+        let test = testing::test!({
             .using_temp_dir()
             .setup(setup_backup_dir)
-            .build();
+        });
 
         let (stdout, stderr) = exe_bak8(&test, 1, Some(true), &["backup", "scheduled"]);
         assert_eq!("", stdout);
         assert_eq!("", stderr);
     }
 
-    #[named]
-    #[test]
+    #[tested]
     fn test_manual_full() {
-        let test = TESTING.test(function_name!())
+        let test = testing::test!({
             .using_temp_dir()
             .setup(setup_backup_dir)
-            .build();
+        });
 
         let source_1_dir = testlib::source_dir(1, &test);
 
@@ -108,13 +105,12 @@ mod tests {
         assert!(!dir_diff::is_different(&source_1_dir, &results[0].1).unwrap());
     }
 
-    #[named]
-    #[test]
+    #[tested]
     fn test_manual_incremental() {
-        let test = TESTING.test(function_name!())
+        let test = testing::test!({
             .using_temp_dir()
             .setup(setup_backup_dir)
-            .build();
+        });
 
         let source_1_dir = testlib::source_dir(1, &test);
         let source_2_dir = testlib::source_dir(2, &test);

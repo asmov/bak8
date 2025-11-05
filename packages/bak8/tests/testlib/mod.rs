@@ -2,7 +2,7 @@
 
 use std::{fs, sync::OnceLock, path::PathBuf};
 use chrono::Timelike;
-use asmov_common_testing::{self as testing, prelude::*};
+use sourcetrait_testing::{self as testing, prelude::*};
 use bak8;
 use whoami;
 
@@ -17,17 +17,16 @@ pub(crate) const ENV_BAK8_TEST_TMP_DIR: &'static str = "BAK8_TEST_TMP_DIR";
 /// Where a mock filesystem is located
 pub(crate) const ENV_BAK8_TEST_SOURCE_ROOT: &'static str = "BAK8_TEST_SOURCE_ROOT";
 
-pub(crate) fn source_dir(source_num: u8, test: &testing::Test) -> PathBuf {
-    test.imported_fixture_dir(testlib_namepath())
+pub(crate) static GROUP_TESTLIB: testing::Group = testing::group!(TESTLIB, Integration, {
+    .using_fixture_dir()
+});
+
+pub(crate) fn source_dir(source_num: u8, _test: &testing::Test) -> PathBuf {
+    GROUP_TESTLIB.fixture_dir()
         .join(MOCK_FS_DIRNAME)
         .join(format!("{}{source_num}", SOURCE_PREFIX))
         .join(HOME_TESTUSR)
         .canonicalize().unwrap()
-}
-
-pub(crate) fn testlib_namepath() -> &'static testing::Namepath {
-    static NAMEPATH: OnceLock<testing::Namepath> = OnceLock::new();
-    &NAMEPATH.get_or_init(|| testing::Namepath::module(testing::UseCase::Integration, TESTLIB.to_string()))
 }
 
 pub(crate) trait TestlibModuleBuilder {
@@ -38,8 +37,8 @@ impl<'func> TestlibModuleBuilder for testing::ModuleBuilder<'func> {
     fn testlib_module_defaults(self) -> Self {
         bak8::log::Log::init(None, None);
         //std::env::set_var("BAK8_TEST", "1");//todo
-        self.import_fixture_dir(testlib_namepath())
-            .base_temp_dir(env!("CARGO_TARGET_TMPDIR"))
+        //call GROUP_TESTLIB instead: self.import_fixture_dir(testlib_namepath());
+        self.base_temp_dir(env!("CARGO_TARGET_TMPDIR"))
     }
 }
 
@@ -90,7 +89,7 @@ pub(crate) fn make_config(test: &testing::Test, source_version: u8) -> bak8::con
         backups: vec![
             bak8::config::BackupConfigBackup {
                 name: "home".to_string(),
-                source_dir: test.imported_fixture_dir(&testlib_namepath())
+                source_dir: GROUP_TESTLIB.fixture_dir()
                     .join(MOCK_FS_DIRNAME)
                     .join(format!("{}{source_version}", SOURCE_PREFIX))
                     .join(HOME_TESTUSR)
@@ -254,7 +253,7 @@ pub(crate) fn assert_remote_backup_synced(
 
     // compare sha256sum manifest between testing source and remote destination
     let remote_manifest = bak8::cmd::ssh_run::ssh_dir_manifest(&output.remote, &expected_dir).unwrap();
-    let expected_manifest = fs::read_to_string(test.imported_fixture_dir(testlib_namepath())
+    let expected_manifest = fs::read_to_string(GROUP_TESTLIB.fixture_dir()
         .join(MOCK_FS_DIRNAME)
         .join(format!("{}{source_num}", SOURCE_PREFIX))
         .with_extension("manifest")).unwrap().trim().to_string();

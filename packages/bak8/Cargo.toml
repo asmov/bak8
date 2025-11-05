@@ -30,7 +30,7 @@ sha256 = "1"
 uzers = "0.12"
 
 [dev-dependencies]
-asmov-common-testing = "2"
+sourcetrait_testing = "4"
 lazy_static = "1"
 dir-diff = "0.3"
 regex = "1"

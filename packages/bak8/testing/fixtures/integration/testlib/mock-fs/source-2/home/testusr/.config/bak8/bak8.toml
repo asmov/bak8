@@ -1,6 +1,6 @@
 backup_storage_dir = "$BAK8_TEST_TMP_DIR/strg/bak8"
 storage_admin_user = "$USER"
-backup_users_group = "$USER"
+backup_users_group = "$GROUP"
 
 [[schedule]]
 name = "minutely"
