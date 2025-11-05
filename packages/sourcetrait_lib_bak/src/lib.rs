@@ -587,7 +587,7 @@ mod tests {
         let base_dir = "/home/dev/.local/share/sourcetrait/bak";
         let src_file = "/home/dev/tmp/source.txt";
         let mirror_dir = determine_mirror_dir(Path::new(base_dir), Path::new(src_file)).unwrap();
-        assert_eq!(Path::new("/home/dev/.local/share/sourcetrait/backup/home/dev/tmp"), mirror_dir);
+        assert_eq!(Path::new("/home/dev/.local/share/sourcetrait/bak/home/dev/tmp"), mirror_dir);
     }
 
     #[cfg(target_os = "windows")]
