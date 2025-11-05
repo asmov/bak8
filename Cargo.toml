@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "packages/bak8-bak",
+    "packages/sourcetrait_lib_bak",
     "packages/sourcetrait_lib_backup",
     "packages/sourcetrait_lib_backup_os"
 ]
