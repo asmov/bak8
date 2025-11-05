@@ -4,6 +4,7 @@ mod testlib;
 mod tests {
     use super::testlib::{self, TestlibModuleBuilder};
     use sourcetrait_testing::{self as testing, prelude::*};
+    use sourcetrait_lib_backup as lib_backup;
 
     static TESTING: testing::Module = testing::module!(Integration, {
             .testlib_module_defaults()
@@ -12,8 +13,8 @@ mod tests {
 
     fn setup_sync_test(
         test: &testing::Test,
-        config: &bak8::config::BackupConfig,
-        _cfg_remote: &bak8::config::BackupConfigRemote,
+        config: &lib_backup::config::BackupConfig,
+        _cfg_remote: &lib_backup::config::BackupConfigRemote,
     ) {
         testlib::setup_backup_dir(test, config);
     }
@@ -39,16 +40,16 @@ mod tests {
         let mut results = testlib::bak8_backup(&cli, &config).unwrap();
 
         assert_eq!(4, results.len(), "{:#?}", results);
-        let bak8::JobOutput::SyncArchive(sync_archive_output) = results.pop().unwrap() else {
+        let lib_backup::JobOutput::SyncArchive(sync_archive_output) = results.pop().unwrap() else {
             panic!("not SynArchive")
         };
-        let bak8::JobOutput::SyncBackup(sync_backup_output) = results.pop().unwrap() else {
+        let lib_backup::JobOutput::SyncBackup(sync_backup_output) = results.pop().unwrap() else {
             panic!("not SyncBackup")
         };
-        let bak8::JobOutput::Archive(archive_output) = results.pop().unwrap() else {
+        let lib_backup::JobOutput::Archive(archive_output) = results.pop().unwrap() else {
             panic!("not Archive")
         };
-        let bak8::JobOutput::Backup(_backup_output) = results.pop().unwrap() else {
+        let lib_backup::JobOutput::Backup(_backup_output) = results.pop().unwrap() else {
             panic!("not Backup")
         };
 
@@ -68,7 +69,7 @@ mod tests {
 
         testlib::assert_remote_backup_synced(
             &test,
-            bak8::BackupType::Full,
+            lib_backup::BackupType::Full,
             1,
             &cfg_remote,
             &sync_backup_output,

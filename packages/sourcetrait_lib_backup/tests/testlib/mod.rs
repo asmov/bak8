@@ -3,7 +3,7 @@
 use std::{fs, sync::OnceLock, path::PathBuf};
 use chrono::Timelike;
 use sourcetrait_testing::{self as testing, prelude::*};
-use bak8;
+use sourcetrait_lib_backup as lib_backup;
 use whoami;
 
 pub(crate) const STRG_BAK8: &'static str = "strg/bak8";
@@ -35,40 +35,40 @@ pub(crate) trait TestlibModuleBuilder {
 
 impl<'func> TestlibModuleBuilder for testing::ModuleBuilder<'func> {
     fn testlib_module_defaults(self) -> Self {
-        bak8::log::Log::init(None, None);
+        lib_backup::log::Log::init(None, None);
         //std::env::set_var("BAK8_TEST", "1");//todo
         //call GROUP_TESTLIB instead: self.import_fixture_dir(testlib_namepath());
         self.base_temp_dir(env!("CARGO_TARGET_TMPDIR"))
     }
 }
 
-pub(crate) fn bak8_backup(cli: &bak8::cli::Cli, config: &bak8::config::BackupConfig) -> bak8::job::JobResults {
-    bak8::run::backup::run_backup(&cli, &bak8::cli::BackupCommand::Scheduled, Some(config))
+pub(crate) fn bak8_backup(cli: &lib_backup::cli::Cli, config: &lib_backup::config::BackupConfig) -> lib_backup::job::JobResults {
+    lib_backup::run::backup::run_backup(&cli, &lib_backup::cli::BackupCommand::Scheduled, Some(config))
 }
 
-pub(crate) fn setup_backup_dir(test: &testing::Test, config: &bak8::config::BackupConfig) {
-    bak8::Bak8Path::StorageDir(test.temp_dir().join(STRG_BAK8)).setup(config).unwrap();
+pub(crate) fn setup_backup_dir(test: &testing::Test, config: &lib_backup::config::BackupConfig) {
+    lib_backup::Bak8Path::StorageDir(test.temp_dir().join(STRG_BAK8)).setup(config).unwrap();
 }
 
-pub(crate) fn make_scheduled_backup_cli(_test: &testing::Test) -> bak8::cli::Cli {
-    bak8::cli::Cli {
+pub(crate) fn make_scheduled_backup_cli(_test: &testing::Test) -> lib_backup::cli::Cli {
+    lib_backup::cli::Cli {
         config_file: None,
         force: false,
         quiet: false,
-        subcommand: bak8::cli::Command::Backup(bak8::cli::BackupCommand::Scheduled),
+        subcommand: lib_backup::cli::Command::Backup(lib_backup::cli::BackupCommand::Scheduled),
     }
 }
 
-pub(crate) fn make_config(test: &testing::Test, source_version: u8) -> bak8::config::BackupConfig {
-    let username = bak8::sys::username();
-    let usergroup = bak8::sys::usergroup();
-    bak8::config::BackupConfig {
+pub(crate) fn make_config(test: &testing::Test, source_version: u8) -> lib_backup::config::BackupConfig {
+    let username = lib_backup::sys::username();
+    let usergroup = lib_backup::sys::usergroup();
+    lib_backup::config::BackupConfig {
         backup_storage_dir: test.temp_dir().join(STRG_BAK8)
             .to_str().unwrap().to_string(),
         storage_admin_user: username.to_string(),
         backup_users_group: usergroup.to_string(),
         schedules: vec![
-            bak8::config::BackupConfigSchedule {
+            lib_backup::config::BackupConfigSchedule {
                 name: "minutely".to_string(),
                 minute: None,
                 minutes: Some(vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
@@ -87,7 +87,7 @@ pub(crate) fn make_config(test: &testing::Test, source_version: u8) -> bak8::con
         remotes: vec![],
         remote_groups: vec![],
         backups: vec![
-            bak8::config::BackupConfigBackup {
+            lib_backup::config::BackupConfigBackup {
                 name: "home".to_string(),
                 source_dir: GROUP_TESTLIB.fixture_dir()
                     .join(MOCK_FS_DIRNAME)
@@ -124,18 +124,18 @@ pub(crate) fn setup_incremental_backup_test(test: &mut testing::Test) {
     assert_eq!(2, results.len());
     results.pop().unwrap();
     let backup_output = match results.pop().unwrap() {
-        bak8::JobOutput::Backup(job) => job, _ => panic!() };
+        lib_backup::JobOutput::Backup(job) => job, _ => panic!() };
 
-    let earlier_run_name = bak8::backup::BackupRunName::new(
+    let earlier_run_name = lib_backup::backup::BackupRunName::new(
         chrono::Local::now().checked_sub_signed(chrono::Duration::minutes(1)).unwrap(),
-        bak8::sys::hostname(),
-        bak8::sys::username(),
+        lib_backup::sys::hostname(),
+        lib_backup::sys::username(),
         &config.backups[0].name,
     );
 
-    let earlier_backup_run_dir = bak8::paths::Bak8Path::backup(
+    let earlier_backup_run_dir = lib_backup::paths::Bak8Path::backup(
         test.temp_dir().join(STRG_BAK8),
-        bak8::backup::BackupType::Full,
+        lib_backup::backup::BackupType::Full,
         &earlier_run_name);
 
     fs::rename(&backup_output.dest_dir, earlier_backup_run_dir).unwrap();
@@ -143,8 +143,8 @@ pub(crate) fn setup_incremental_backup_test(test: &mut testing::Test) {
 
 /// Remote testing need either "sshd.test" or localhost to be configured for SSH pubkey login (~/.ssh/config)
 /// We will try to resolve "sshd.test" first and then fallback to localhost
-pub(crate) fn resolve_test_remote() -> &'static bak8::Remote {
-    static TEST_REMOTE: OnceLock<bak8::Remote> = OnceLock::new();
+pub(crate) fn resolve_test_remote() -> &'static lib_backup::Remote {
+    static TEST_REMOTE: OnceLock<lib_backup::Remote> = OnceLock::new();
     TEST_REMOTE.get_or_init(|| {
         let host = match std::net::TcpStream::connect("sshd.test:22") {
             Ok(_) => "sshd.test".to_string(),
@@ -154,24 +154,24 @@ pub(crate) fn resolve_test_remote() -> &'static bak8::Remote {
             }
         };
 
-        bak8::Remote {
+        lib_backup::Remote {
             name: "sshd-test".to_string(),
             host: host.clone(),
             user: None,
-            platform: bak8::Platform::GNU,
+            platform: lib_backup::Platform::GNU,
         }
     })
 }
 
 /// Creates the necessary backup directories on the remote
-pub(crate) fn setup_test_remote(config: &bak8::config::BackupConfig) -> bak8::config::BackupConfigRemote {
+pub(crate) fn setup_test_remote(config: &lib_backup::config::BackupConfig) -> lib_backup::config::BackupConfigRemote {
     let remote = resolve_test_remote();
-    let temp_dir = bak8::cmd::ssh_run::ssh_temp_dir(&remote).unwrap();
-    let storage_dir = bak8::Bak8Path::RemoteStorageDir { remote: remote.clone(), storage_dir: temp_dir.join(STRG_BAK8) };
+    let temp_dir = lib_backup::cmd::ssh_run::ssh_temp_dir(&remote).unwrap();
+    let storage_dir = lib_backup::Bak8Path::RemoteStorageDir { remote: remote.clone(), storage_dir: temp_dir.join(STRG_BAK8) };
 
     storage_dir.setup(config).unwrap();
 
-    bak8::config::BackupConfigRemote {
+    lib_backup::config::BackupConfigRemote {
         name: remote.name.clone(),
         host: remote.host.clone(),
         user: remote.user.clone(),
@@ -180,7 +180,7 @@ pub(crate) fn setup_test_remote(config: &bak8::config::BackupConfig) -> bak8::co
     }
 }
 
-pub(crate) fn teardown_test_remote(cfg_remote: &bak8::config::BackupConfigRemote) {
+pub(crate) fn teardown_test_remote(cfg_remote: &lib_backup::config::BackupConfigRemote) {
     let dir = PathBuf::from(&cfg_remote.backup_storage_dir)
         .parent().unwrap()
         .parent().unwrap().to_path_buf();
@@ -189,7 +189,7 @@ pub(crate) fn teardown_test_remote(cfg_remote: &bak8::config::BackupConfigRemote
     let parent_dir = dir.parent().unwrap();
     assert_eq!(parent_dir, PathBuf::from("/tmp"), "DANGER: Attempting to delete non-temporary directory!");
 
-    bak8::cmd::ssh_run::ssh_delete_dir(
+    lib_backup::cmd::ssh_run::ssh_delete_dir(
         &cfg_remote.into(),
         &dir
     ).unwrap();
@@ -197,14 +197,14 @@ pub(crate) fn teardown_test_remote(cfg_remote: &bak8::config::BackupConfigRemote
 
 pub(crate) fn make_sync_config(
     test: &testing::Test,
-    cfg_remote: &bak8::config::BackupConfigRemote,
+    cfg_remote: &lib_backup::config::BackupConfigRemote,
     source_version: u8
-) -> bak8::config::BackupConfig {
+) -> lib_backup::config::BackupConfig {
     let mut config = make_config(test, source_version);
     config.remotes = vec![ cfg_remote.clone() ];
 
     config.backups[0].syncs = vec![
-        bak8::config::BackupConfigSync {
+        lib_backup::config::BackupConfigSync {
             remote: Some("sshd-test".to_string()),
             remote_group: None,
             sync_full: true,
@@ -216,7 +216,7 @@ pub(crate) fn make_sync_config(
     config
 }
 
-pub(crate) fn expected_backup_ouput_dir(test: &testing::Test, backup_type: bak8::BackupType, output: &bak8::BackupJobOutput
+pub(crate) fn expected_backup_ouput_dir(test: &testing::Test, backup_type: lib_backup::BackupType, output: &lib_backup::BackupJobOutput
 ) -> PathBuf {
     test.temp_dir()
         .join(STRG_BAK8)
@@ -230,11 +230,11 @@ pub(crate) fn expected_backup_ouput_dir(test: &testing::Test, backup_type: bak8:
 }
 
 pub(crate) fn assert_remote_backup_synced(
-    test: &testing::Test,
-    backup_type: bak8::BackupType,
+    _test: &testing::Test,
+    backup_type: lib_backup::BackupType,
     source_num: u8,
-    remote_cfg: &bak8::config::BackupConfigRemote,
-    output: &bak8::SyncBackupJobOutput
+    remote_cfg: &lib_backup::config::BackupConfigRemote,
+    output: &lib_backup::SyncBackupJobOutput
 ) {
     assert_eq!(remote_cfg.name, output.remote.name);
 
@@ -249,10 +249,10 @@ pub(crate) fn assert_remote_backup_synced(
     assert_eq!(expected_dir, output.remote_dest_dir.as_path());
 
     // remotely test to see if the expected dir exists
-    assert!(bak8::cmd::ssh_run::ssh_dirs_exist(&output.remote, &vec![&expected_dir]).unwrap());
+    assert!(lib_backup::cmd::ssh_run::ssh_dirs_exist(&output.remote, &vec![&expected_dir]).unwrap());
 
     // compare sha256sum manifest between testing source and remote destination
-    let remote_manifest = bak8::cmd::ssh_run::ssh_dir_manifest(&output.remote, &expected_dir).unwrap();
+    let remote_manifest = lib_backup::cmd::ssh_run::ssh_dir_manifest(&output.remote, &expected_dir).unwrap();
     let expected_manifest = fs::read_to_string(GROUP_TESTLIB.fixture_dir()
         .join(MOCK_FS_DIRNAME)
         .join(format!("{}{source_num}", SOURCE_PREFIX))
@@ -262,41 +262,41 @@ pub(crate) fn assert_remote_backup_synced(
 
 pub(crate) fn assert_remote_archive_synced(
     _test: &testing::Test,
-    remote_cfg: &bak8::config::BackupConfigRemote,
-    archive_output: &bak8::ArchiveJobOutput,
-    output: &bak8::SyncArchiveJobOutput
+    remote_cfg: &lib_backup::config::BackupConfigRemote,
+    archive_output: &lib_backup::ArchiveJobOutput,
+    output: &lib_backup::SyncArchiveJobOutput
 ) {
     assert_eq!(remote_cfg.name, output.remote.name);
 
     let expected_filepath = PathBuf::from(&remote_cfg.backup_storage_dir)
-        .join(bak8::paths::consts::BACKUP_ARCHIVE_DIRNAME)
+        .join(lib_backup::paths::consts::BACKUP_ARCHIVE_DIRNAME)
         .join(whoami::hostname().unwrap())
         .join(whoami::username().unwrap())
         .join(output.backup_run_name.datetime.format("%Y").to_string())
         .join(output.backup_run_name.datetime.format("%m").to_string())
         .join(output.backup_run_name.datetime.format("%d").to_string())
         .join(output.backup_run_name.to_string())
-        .with_extension(bak8::paths::consts::TAR_XZ_EXTENSION);
+        .with_extension(lib_backup::paths::consts::TAR_XZ_EXTENSION);
     assert_eq!(expected_filepath, output.remote_dest_filepath.as_path());
 
     let expected_checksum_filepath = PathBuf::from(&remote_cfg.backup_storage_dir)
-        .join(bak8::paths::consts::BACKUP_ARCHIVE_DIRNAME)
+        .join(lib_backup::paths::consts::BACKUP_ARCHIVE_DIRNAME)
         .join(whoami::hostname().unwrap())
         .join(whoami::username().unwrap())
         .join(output.backup_run_name.datetime.format("%Y").to_string())
         .join(output.backup_run_name.datetime.format("%m").to_string())
         .join(output.backup_run_name.datetime.format("%d").to_string())
         .join(output.backup_run_name.to_string())
-        .with_extension(format!("{}.{}", bak8::paths::consts::TAR_XZ_EXTENSION, bak8::paths::consts::SHA256_EXTENSION));
+        .with_extension(format!("{}.{}", lib_backup::paths::consts::TAR_XZ_EXTENSION, lib_backup::paths::consts::SHA256_EXTENSION));
     assert_eq!(expected_checksum_filepath, output.remote_dest_checksum_filepath.as_path());
 
     // remotely test to see if the expected dir exists
-    assert!(bak8::cmd::ssh_run::ssh_files_exist(&output.remote, &vec![
+    assert!(lib_backup::cmd::ssh_run::ssh_files_exist(&output.remote, &vec![
         &expected_filepath,
         &expected_checksum_filepath]).unwrap());
 
     // compare sha256sum manifest between testing source and remote destination
-    let remote_checksum = bak8::cmd::ssh_run::ssh_file_contents(&output.remote, &expected_checksum_filepath)
+    let remote_checksum = lib_backup::cmd::ssh_run::ssh_file_contents(&output.remote, &expected_checksum_filepath)
         .unwrap().unwrap()
         .split_ascii_whitespace()
         .next().unwrap().to_string();

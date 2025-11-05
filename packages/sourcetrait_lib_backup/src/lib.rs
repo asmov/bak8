@@ -21,6 +21,7 @@ pub use backup::{BackupType, BackupRunName, BackupJobOutput};
 pub use paths::Bak8Path;
 pub use job::JobOutput;
 pub use sync::{Remote, Platform, SyncBackupJobOutput, SyncArchiveJobOutput};
+pub(crate) use sourcetrait_lib_backup_os::prelude::*;
 
 pub mod consts {
     pub const BAK8: &'static str = "bak8";

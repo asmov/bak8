@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use clap::{Parser, Subcommand};
-
 use crate::{PathExt, E_STR};
+use crate::*;
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
@@ -46,7 +46,7 @@ impl Cli {
             Some(dir) => {
                 // handle passing Cli parameters manually
                 if dir.to_str().expect(E_STR) == "-" {
-                    crate::os::user_app_data_dir(true, crate::BAK8.into())
+                    cross::user_app_data_dir(true, crate::BAK8.into())
                         .expect("Failed to get user app data directory")
                 } else {
                     dir.clone()
@@ -82,7 +82,7 @@ fn validate_file(path: &str) -> Result<PathBuf, String> {
 
 fn validate_dir(path: &str) -> Result<PathBuf, String> {
     let path = if path == "-" {
-        crate::os::user_app_data_dir(true, crate::BAK8.into())
+        cross::user_app_data_dir(true, crate::BAK8.into())
             .map_err(|e| e.to_string())?
     } else {
         validate_path(path, "Directory")?

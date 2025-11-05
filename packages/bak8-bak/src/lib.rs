@@ -32,7 +32,7 @@ use clap::Parser;
 use file_diff;
 use thiserror;
 use colored::Colorize;
-use bak8_lib_os::prelude::*;
+pub(crate) use sourcetrait_lib_backup_os::{self as cross, *, prelude::*};
 
 pub const BAK8: &str = "bak8";
 const BAK: &str = "bak";
@@ -209,7 +209,7 @@ fn confirm_wipe(source_file: &Path, dir: &Path, force: bool) -> bool {
 
 fn run_wipe(cli: &cli::Cli) -> Result<(), Error> {
     let dir = cli.dir();
-    let app_data_dir = os::user_app_data_dir(true, BAK8.into())
+    let app_data_dir = cross::user_app_data_dir(true, BAK8.into())
         .map_err(|e| Error::Generic(e.to_string()))?;
 
     if dir == app_data_dir {
@@ -250,7 +250,7 @@ fn run_wipe(cli: &cli::Cli) -> Result<(), Error> {
 
 fn run_list(cli: &cli::Cli) -> Result<(), Error> {
     let dir = cli.dir();
-    let app_data_dir = os::user_app_data_dir(true, BAK8.into())
+    let app_data_dir = cross::user_app_data_dir(true, BAK8.into())
         .map_err(|e| Error::Generic(e.to_string()))?;
 
     if dir != app_data_dir {
@@ -298,7 +298,7 @@ fn print_list_backups(source_file: &Path, dir: &Path) -> Result<(), Error> {
 fn run_diff(cli: &cli::Cli, index: u8) -> Result<(), Error> {
     let source_file = &cli.file;
     let mut dir = cli.dir();
-    let app_data_dir = os::user_app_data_dir(true, BAK8.into())
+    let app_data_dir = cross::user_app_data_dir(true, BAK8.into())
         .map_err(|e| Error::Generic(e.to_string()))?;
 
     if dir == app_data_dir {
@@ -382,7 +382,7 @@ fn list_bak_n_files(file: &Path, dir: &Path) -> Result<Vec<PathBuf>, Error> {
 /// Performs a copy
 fn run_backup(cli: &cli::Cli) -> Result<(), Error> {
     let dir = cli.dir();
-    let app_data_dir = os::user_app_data_dir(true, BAK8.into())
+    let app_data_dir = cross::user_app_data_dir(true, BAK8.into())
         .map_err(|e| Error::Generic(e.to_string()))?;
     let is_app_data_dir = dir == app_data_dir;
 
@@ -400,7 +400,7 @@ fn run_backup(cli: &cli::Cli) -> Result<(), Error> {
     match PLATFORM.copy_file(&cli.file, &bak_filepath) {
         Ok(_) => Ok(()),
         Err(e) if e.kind() == std::io::ErrorKind::PermissionDenied && !is_app_data_dir => {
-            let app_data_dir = os::user_app_data_dir(true, BAK8.into())
+            let app_data_dir = cross::user_app_data_dir(true, BAK8.into())
                 .map_err(|e| Error::Generic(e.to_string()))?;
 
             let mirror_dir = mirror_dir(&app_data_dir, &cli.file, true)?;

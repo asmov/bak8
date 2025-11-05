@@ -1,7 +1,7 @@
 use std::{fs, io::Write, path::Path};
-use bak8_lib_os::prelude::*;
 use colored::Colorize;
 use crate::{error::*, log::*, config::*, cli::*, paths::*};
+use crate::*;
 
 pub(crate) fn run_config(cli: &Cli, subcmd: &ConfigCommand) -> Result<bool> {
     let config_path = select_config_path(&cli)?;

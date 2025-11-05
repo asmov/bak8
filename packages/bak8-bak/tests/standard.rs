@@ -3,6 +3,7 @@ mod common;
 #[cfg(test)]
 mod tests {
     use super::common::*;
+    use sourcetrait_lib_backup_os as cross;
     use bak8_bak as bak;
     use clap::Parser;
     use std::path::PathBuf;
@@ -213,7 +214,7 @@ mod tests {
             bak::cli::Cli::parse_from(["-f", "-q", "-n", "3", source_filepath.to_str().unwrap(), "-"])
         ).unwrap();
 
-        let app_data_dir = bak::os::user_app_data_dir(true, bak::BAK8.into())
+        let app_data_dir = cross::user_app_data_dir(true, bak::BAK8.into())
             .expect("Failed to get user app data directory");
         let mirror_dir = bak::mirror_dir(&app_data_dir, &tmpdir.join("source.txt"), false).unwrap();
 

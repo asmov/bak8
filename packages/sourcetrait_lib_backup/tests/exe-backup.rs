@@ -4,12 +4,13 @@ mod testlib;
 mod tests {
     use std::{path::PathBuf, process, sync::OnceLock};
     use sourcetrait_testing::{self as testing, prelude::*};
-    use bak8::{paths::{self, Bak8Path}, sys::GROUP_BAK8USR};
+    use sourcetrait_lib_backup as lib_backup;
+    use lib_backup::{paths::{self, Bak8Path}, sys::GROUP_BAK8USR};
     use crate::testlib::GROUP_TESTLIB;
 
     use super::testlib::{self, TestlibModuleBuilder};
 
-    const BIN_EXE: &str = env!("CARGO_BIN_EXE_bak8");
+    const BIN_EXE: &str = env!("CARGO_BIN_EXE_sourcetrait_lib_backup");
 
     static TESTING: testing::Module = testing::module!(Integration, {
             .testlib_module_defaults()
@@ -67,7 +68,7 @@ mod tests {
         });
 
         let (stdout, stderr) = exe_bak8(&test, 1, Some(true), &["backup", "--help"]);
-        assert!(stdout.contains("Usage: bak8 backup "));
+        assert!(stdout.contains("Usage: sourcetrait_lib_backup backup "));
         assert_eq!("", stderr);
     }
 

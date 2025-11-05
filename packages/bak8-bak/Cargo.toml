@@ -15,7 +15,7 @@ name = "bak"
 path = "src/main.rs"
 
 [dependencies]
-bak8-lib-os = { version="0", path = "../bak8-lib-os" }
+sourcetrait_lib_backup_os = { version="0", path = "../sourcetrait_lib_backup_os" }
 clap = { version = "4", features = ["derive"] }
 colored = "3"
 file_diff = "1"

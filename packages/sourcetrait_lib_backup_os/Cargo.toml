@@ -1,7 +1,7 @@
 [package]
-name = "bak8-lib-os"
+name = "sourcetrait_lib_backup_os"
 version = "0.2.0"
-description = "Platform specific library for bak8"
+description = "Platform specific library for SourceTrait Backup"
 authors = ["Asmov LLC <development.pub@asmov.software>"]
 repository = "https://github.com/asmov/bak8"
 homepage = "https://github.com/asmov/bak8/tree/dev/packages/bak8-lib-os"

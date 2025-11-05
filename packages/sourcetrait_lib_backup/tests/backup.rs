@@ -5,8 +5,9 @@ mod tests {
     use std::fs;
     use std::os::unix::fs::PermissionsExt;
     use sourcetrait_testing::{self as testing, prelude::*};
-    use bak8::log::TikPath;
-    use bak8::job::*;
+    use sourcetrait_lib_backup as lib_backup;
+    use lib_backup::log::TikPath;
+    use lib_backup::job::*;
     use super::testlib::{self, TestlibModuleBuilder};
 
     static TESTING: testing::Module = testing::module!(Integration, {
@@ -30,7 +31,7 @@ mod tests {
         let JobOutput::Archive(archive_output) = results.pop().unwrap() else { panic!() };
         let JobOutput::Backup(backup_output) = results.pop().unwrap() else { panic!() };
 
-        assert_eq!(testlib::expected_backup_ouput_dir(&test, bak8::BackupType::Full, &backup_output),
+        assert_eq!(testlib::expected_backup_ouput_dir(&test, lib_backup::BackupType::Full, &backup_output),
             backup_output.dest_dir.as_path());
 
         assert_eq!(false, dir_diff::is_different(
@@ -58,7 +59,7 @@ mod tests {
         assert_eq!(1, results.len(), "{:#?}", results);
         let JobOutput::Backup(backup_output) = results.pop().unwrap() else { panic!() };
 
-        assert_eq!(testlib::expected_backup_ouput_dir(&test, bak8::BackupType::Incremental,
+        assert_eq!(testlib::expected_backup_ouput_dir(&test, lib_backup::BackupType::Incremental,
             &backup_output), backup_output.dest_dir.as_path());
 
         let dest_dir = backup_output.dest_dir.as_path();
