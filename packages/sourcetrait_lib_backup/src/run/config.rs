@@ -153,7 +153,7 @@ fn run_config_show(config_path: &Path) -> Result<bool> {
         return Ok(false);
     }
 
-    let header = format!("bak8 config: {}", config_path.tikn_path());
+    let header = format!("sourcetrait backup config: {}", config_path.tikn_path());
     println!("{}", header.cyan());
     println!("{:=<1$}", "".cyan(), header.chars().count());
     print!("{}", fs::read_to_string(config_path)

@@ -35,9 +35,9 @@ fn users_cache() -> &'static Arc<Mutex<uzers::UsersCache>> {
     &CACHE.get_or_init(|| Arc::new(Mutex::new(uzers::UsersCache::new())))
 }
 
-pub const GROUP_BAK8USR: &'static str = "bak8usr";
+pub const GROUP_BACKUP_USERNAME: &'static str = "bakusr";
 
-/// Returns UID 0 (root) if the `bak8usr` group exists, otherwise the current user's UID.
+/// Returns UID 0 (root) if the `bakusr` group exists, otherwise the current user's UID.
 pub fn storage_admin_uid(config: &BackupConfig) -> Result<u32> {
     static UID: OnceLock<Option<u32>> = OnceLock::new();
     let uid = UID.get_or_init(|| {

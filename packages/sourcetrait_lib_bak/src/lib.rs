@@ -584,7 +584,7 @@ mod tests {
 
     #[test]
     fn test_determine_mirror_dir() {
-        let base_dir = "/home/dev/.local/share/bak8";
+        let base_dir = "/home/dev/.local/share/sourcetrait/bak";
         let src_file = "/home/dev/tmp/source.txt";
         let mirror_dir = determine_mirror_dir(Path::new(base_dir), Path::new(src_file)).unwrap();
         assert_eq!(Path::new("/home/dev/.local/share/bak8/home/dev/tmp"), mirror_dir);
@@ -594,9 +594,9 @@ mod tests {
     #[test]
     fn test_determine_mirror_dir_windows() {
         // test a windows path with path extensions
-        let base_dir = "\\\\?\\C:\\Users\\dev\\AppData\\Local\\bak8";
+        let base_dir = "\\\\?\\C:\\Users\\dev\\AppData\\Local\\sourcetrait\\bak";
         let src_file = "\\\\?\\C:\\Users\\dev\\tmp\\source.txt";
         let mirror_dir = determine_mirror_dir(Path::new(base_dir), Path::new(src_file)).unwrap();
-        assert_eq!("\\\\?\\C:\\Users\\dev\\AppData\\Local\\bak8\\C\\Users\\dev\\tmp", mirror_dir.to_str().unwrap());
+        assert_eq!("\\\\?\\C:\\Users\\dev\\AppData\\Local\\sourcetrait\\bak\\C\\Users\\dev\\tmp", mirror_dir.to_str().unwrap());
     }
 }

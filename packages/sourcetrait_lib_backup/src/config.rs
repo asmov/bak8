@@ -26,7 +26,7 @@ pub fn select_config_path(cli: &Cli) -> Result<PathBuf> {
 pub fn default_config_path() -> Result<PathBuf> {
     Ok(paths::home_dir()?
         .join(paths::consts::HOME_CONFIG_DIR)
-        .join(paths::consts::BAK8_CONFIG_FILENAME))
+        .join(paths::consts::SOURCETRAIT_BACKUP_CONFIG_FILENAME))
 }
 
 pub(crate) fn read_cli_config(cli: &Cli) -> Result<BackupConfig> {
@@ -149,7 +149,7 @@ impl BackupConfig {
     pub fn read_home() -> Result<Self> {
         let config_filepath = paths::home_dir()?
             .join(paths::consts::HOME_CONFIG_DIR)
-            .join(paths::consts::BAK8_CONFIG_FILENAME);
+            .join(paths::consts::SOURCETRAIT_BACKUP_CONFIG_FILENAME);
         Self::read(&config_filepath)
     }
 

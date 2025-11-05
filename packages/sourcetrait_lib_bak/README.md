@@ -1,9 +1,9 @@
-Bak8: Bak
+SourceTrait CLI: Bak
 ================================================================================
 [![Latest Version]][crates.io]
 
-[Latest Version]: https://img.shields.io/crates/v/bak8-bak.svg
-[crates.io]: https://crates.io/crates/bak8-bak
+[Latest Version]: https://img.shields.io/crates/v/sourcetrait_cli_bak.svg
+[crates.io]: https://crates.io/crates/sourcetrait_cli_bak
 
 Creates an adhoc backup `.bak` copy of a file.
 
@@ -52,19 +52,9 @@ Shows the differences between FILE and the specified `bak.N` backup in DIR. [def
 - `rm`  
 Deletes all backups of FILE in DIR.
 
-
-Repository
---------------------------------------------------------------------------------
-Contributors, please review [ASMOV.md](./ASMOV.md).  
-
-Found a bug? Search for an existing issue on GitHub.  
-If an issue exists, chime in to add weight to it.  
-If an issue does not exist, create one and tell us how to reproduce the bug. 
-
-
 License (AGPL3)
 --------------------------------------------------------------------------------
-bak8-bak: Creates an adhoc backup `.bak` copy of a file.  
+SourceTrait CLI: Bak: Creates an adhoc backup `.bak` copy of a file.  
 Copyright (C) 2024-2025 Asmov LLC  
 
 This program is free software: you can redistribute it and/or modify
@@ -79,8 +69,3 @@ GNU Affero General Public License for more details.
 
 You should have received a [copy](./LICENSE-AGPL-3.txt) of the GNU Affero General Public License
 along with this program.  If not, see https://www.gnu.org/licenses/.
-
-
-Trademark
---------------------------------------------------------------------------------
-*bak8* is a pending trademark of Asmov LLC.

@@ -15,11 +15,11 @@ fn make_log_prefix(topic: &str, prefix: Option<&str>, color: colored::Color) -> 
 }
 
 pub fn bak8_error_log_prefix() -> String {
-    make_log_prefix(consts::BAK8, Some(" error:"), colored::Color::Red)
+    make_log_prefix(consts::SOURCETRAIT_BACKUP, Some(" error:"), colored::Color::Red)
 }
 
 pub fn bak8_info_log_prefix() -> String {
-    make_log_prefix(consts::BAK8, None, colored::Color::Green)
+    make_log_prefix(consts::SOURCETRAIT_BACKUP, None, colored::Color::Green)
 }
 
 pub trait TikPath {

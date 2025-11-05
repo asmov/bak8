@@ -1,7 +1,7 @@
-DESIGN: Bak8
+DESIGN: SourceTrait Backup 
 ===============================================================================
 
-**Bak8** is a rotational backup automation toolset with a focus on protecting
+**SourceTrait Backup** is a rotational backup automation toolset with a focus on protecting
 user data on desktop operating systems.
 
 The primary OS target is Linux, with MacOS and Windows (WSL) as secondary
@@ -11,7 +11,7 @@ The Bak8 suite consists of two CLI tools:
 - bak8
 - bak
 
-The flagship tool, `bak8` can be used to run both manual and scheduled
+The flagship tool, `sourcetrait backup` can be used to run both manual and scheduled
 backups based on configuration that the user provides. 
 
 We also ship `bak`, which simply creates adhoc `.bak` copies of files,
@@ -20,7 +20,7 @@ typically for use in basic system administration and development.
 Bak8
 --------------------------------------------------------------------------------
 
-Under the hood, `bak8` is essentially an automation tool for `rsync`.
+Under the hood, `sourcetrait backup` is essentially an automation tool for `rsync`.
 
 The user maintains a configuration file that defines:
 - which directories on the filesystem to archive,
@@ -31,7 +31,7 @@ The user maintains a configuration file that defines:
 - which remote servers should backups be sync'd to (via SSH),
 - and how many incremental and full backups to store before pruning.
 
-With this configuration, normal usage of the `bak8` command will
+With this configuration, normal usage of the `sourcetrait backup` command will
 perform any operations necessary when ran, based on schedule. After the user
 sets up their configuration, it's basically hands-off.
 

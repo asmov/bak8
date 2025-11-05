@@ -60,7 +60,7 @@
 
     <Product
         Id='*'
-        Name='bak8'
+        Name='sourcetrait_backup'
         UpgradeCode='2F1807A2-A7C6-4705-A9F5-D62C7AD4160C'
         Manufacturer='Asmov LLC'
         Language='1033'
@@ -83,11 +83,11 @@
             DowngradeErrorMessage='A newer version of [ProductName] is already installed. Setup will now exit.'/>
 
         <Media Id='1' Cabinet='media1.cab' EmbedCab='yes' DiskPrompt='CD-ROM #1'/>
-        <Property Id='DiskPrompt' Value='bak8 Installation'/>
+        <Property Id='DiskPrompt' Value='SourceTrait Backup Installation'/>
 
         <Directory Id='TARGETDIR' Name='SourceDir'>
             <Directory Id='$(var.PlatformProgramFilesFolder)' Name='PFiles'>
-                <Directory Id='APPLICATIONFOLDER' Name='bak8'>
+                <Directory Id='APPLICATIONFOLDER' Name='sourcetrait/backup'>
                     <!--
                       Disabling the license sidecar file in the installer is a two step process:
 
@@ -165,7 +165,7 @@
         <!--<Icon Id='ProductICO' SourceFile='wix\Product.ico'/>-->
         <!--<Property Id='ARPPRODUCTICON' Value='ProductICO' />-->
 
-        <Property Id='ARPHELPLINK' Value='https://github.com/asmov/bak8'/>
+        <Property Id='ARPHELPLINK' Value='https://github.com/sourcetrait/sourcetrait_cli'/>
 
         <UI>
             <UIRef Id='WixUI_FeatureTree'/>

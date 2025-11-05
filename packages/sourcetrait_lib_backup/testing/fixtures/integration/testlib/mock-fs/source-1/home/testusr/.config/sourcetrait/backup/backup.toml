@@ -1,4 +1,4 @@
-backup_storage_dir = "$BAK8_TEST_TMP_DIR/strg/bak8"
+backup_storage_dir = "$SOURCETRAIT_BACKUP_TEST_TMP_DIR/strg/sourcetrait/backup"
 storage_admin_user = "$USER"
 backup_users_group = "$GROUP"
 
@@ -9,7 +9,7 @@ minutes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
 
 [[backup]]
 name = "home"
-source_dir = "$BAK8_TEST_SOURCE_ROOT/home/testusr"
+source_dir = "$SOURCETRAIT_BACKUP_TEST_SOURCE_ROOT/home/testusr"
 full_schedule = "hourly"
 incremental_schedule = "minutely"
 max_full = 4

@@ -1,4 +1,4 @@
-# Building bak8
+# Building SourceTrait CLI: Bak 
 
 These steps are designed for cross-compilation from an Ubuntu 24 linux distro,
 using a Windows 11 Pro VM and hardware running macOS Sonoma on an M3 CPU.

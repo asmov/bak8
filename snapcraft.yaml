@@ -1,8 +1,8 @@
-name: bak8
+name: sourcetrait_backup
 version: git
 summary: Rotational backup system for workstation users
 description: |
-  Bak8 is a rotational backup system focused on providing workstation users with easily accessible daily backups of their home directories.
+  SourceTrait Backup is a rotational backup system focused on providing workstation users with easily accessible daily backups of their home directories.
 
   Backups can be configured to be archived, encrypted, and securely synchronized across multiple devices and cloud storage providers.
 
@@ -22,7 +22,7 @@ platforms:
     build-for: [armhf]
 
 parts:
-  bak8:
+  sourcetrait_backup:
     plugin: rust
     source: .
     build-attributes:
@@ -35,7 +35,7 @@ parts:
       - ssh
 
 apps:
-  bak8:
-    command: bak8
+  sourcetrait_backup:
+    command: sourcetrait_backup
   bak:
     command: bak

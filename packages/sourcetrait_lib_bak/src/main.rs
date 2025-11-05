@@ -1,3 +1,3 @@
 fn main() -> std::process::ExitCode {
-    bak8_bak::run()
+    sourcetrait_lib_bak::run()
 }

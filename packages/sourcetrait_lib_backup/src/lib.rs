@@ -24,10 +24,10 @@ pub use sync::{Remote, Platform, SyncBackupJobOutput, SyncArchiveJobOutput};
 pub(crate) use sourcetrait_lib_backup_os::prelude::*;
 
 pub mod consts {
-    pub const BAK8: &'static str = "bak8";
-    pub const BAK8_FS_VERSION: semver::Version = semver::Version::new(1, 0, 0);
+    pub const SOURCETRAIT_BACKUP: &'static str = "backup";
+    pub const SOURCETRAIT_BACKUP_FS_VERSION: semver::Version = semver::Version::new(1, 0, 0);
 
     lazy_static::lazy_static! {
-        pub static ref BAK8_FS_VERSION_REQ: semver::VersionReq = semver::VersionReq::parse("^1").unwrap();
+        pub static ref SOURCETRAIT_BACKUP_FS_VERSION_REQ: semver::VersionReq = semver::VersionReq::parse("^1").unwrap();
     }
 }

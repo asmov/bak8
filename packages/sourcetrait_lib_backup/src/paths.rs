@@ -7,14 +7,14 @@ const BACKUP_STORAGE_DIR_MODE: u32 = 0o750;
 const BACKUP_RUN_DIR_UNIX_MODE: u32 = 0o700;
 
 pub mod consts {
-    pub const HOME_CONFIG_DIR: &'static str = ".config/bak8";
-    pub const BAK8_CONFIG_FILENAME: &'static str = "bak8.toml";
+    pub const HOME_CONFIG_DIR: &'static str = ".config/sourcetrait/backup";
+    pub const SOURCETRAIT_BACKUP_CONFIG_FILENAME: &'static str = "backup.toml";
     pub const BACKUP_ARCHIVE_DIRNAME: &'static str = "archive";
     pub const BACKUP_FULL_DIRNAME: &'static str = "full";
     pub const BACKUP_INCREMENTAL_DIRNAME: &'static str = "incremental";
     pub const BACKUP_LOGS_DIRNAME: &'static str = "logs";
-    pub const BAK8_FS_VERSION_FILENAME: &'static str = ".bak8_fs_version";
-    pub const ENV_BAK8_HOME: &'static str = "BAK8_HOME";
+    pub const SOURCETRAIT_BACKUP_FS_VERSION_FILENAME: &'static str = ".backup_fs_version";
+    pub const ENV_BAK8_HOME: &'static str = "BACKUP_HOME";
     pub const TAR_XZ_EXTENSION: &'static str = "tar.xz";
     pub const SHA256_EXTENSION: &str = "sha256";
 }
@@ -176,14 +176,14 @@ impl Bak8Path {
     pub fn user_config<P: AsRef<Path>>(home_dir: P) -> Self {
         Self::UserConfig {
             home_dir: home_dir.as_ref().to_path_buf(),
-            path: home_dir.as_ref().join(consts::HOME_CONFIG_DIR).join(consts::BAK8_CONFIG_FILENAME)
+            path: home_dir.as_ref().join(consts::HOME_CONFIG_DIR).join(consts::SOURCETRAIT_BACKUP_CONFIG_FILENAME)
         }
     }
 
     pub fn fs_version<P: AsRef<Path>>(storage_dir: P) -> Self {
         Self::FileSytemVersion {
             storage_dir: storage_dir.as_ref().to_path_buf(),
-            path: storage_dir.as_ref().join(consts::BAK8_FS_VERSION_FILENAME),
+            path: storage_dir.as_ref().join(consts::SOURCETRAIT_BACKUP_FS_VERSION_FILENAME),
         }
     }
 
@@ -241,7 +241,7 @@ impl Bak8Path {
             },
             Self::FileSytemVersion { path, .. } => {
                 if !path.exists() {
-                    fs::write(path, crate::consts::BAK8_FS_VERSION.to_string())
+                    fs::write(path, crate::consts::SOURCETRAIT_BACKUP_FS_VERSION.to_string())
                         .map_err(|e| Error::file_io(e, path, "Failed to create file system version file"))?;
                     unix::fs::chown(&path, Some(storage_admin_uid(config)?), Some(backup_users_gid(config)?))
                         .map_err(|e| Error::file_io(e, path, "Failed to set ownerhsip on file system version file"))?;
@@ -259,7 +259,7 @@ impl Bak8Path {
                         .map_err(|e| Error::remote_cmd(e, remote, &format!(
                             "Unable to create backup storage directory {}", storage_dir.tik_path())))?;
 
-                    crate::cmd::ssh_run::ssh_write_file(remote, &fs_version_file, &crate::consts::BAK8_FS_VERSION.to_string())
+                    crate::cmd::ssh_run::ssh_write_file(remote, &fs_version_file, &crate::consts::SOURCETRAIT_BACKUP_FS_VERSION.to_string())
                         .map_err(|e| Error::remote_cmd(e, remote, &format!(
                             "Unable to write bak8 filesystem version file {}", &fs_version_file.tik_path())))?;
                 } else {
@@ -271,10 +271,10 @@ impl Bak8Path {
                         .map_err(|e| Error::remote_cmd(e, remote, &format!(
                             "Failed to parse remote file system version file {}", &fs_version_file.tik_path())))?;
 
-                    if !crate::consts::BAK8_FS_VERSION_REQ.matches(&remote_fs_version) {
+                    if !crate::consts::SOURCETRAIT_BACKUP_FS_VERSION_REQ.matches(&remote_fs_version) {
                         return Err(Error::remote_cmd_err(remote, &format!(
                             "Remote file system version {} does not match version {}. An upgrade is required.",
-                            remote_fs_version.to_string().tik_cmd(), crate::consts::BAK8_FS_VERSION.to_string().tik_cmd())));
+                            remote_fs_version.to_string().tik_cmd(), crate::consts::SOURCETRAIT_BACKUP_FS_VERSION.to_string().tik_cmd())));
                     } else {
                         // if for some reason there are missing subdirs, attempt to recover: warn and create them
                         let dirs = backup_storage_dirs(storage_dir);
@@ -451,7 +451,7 @@ pub fn home_dir() -> Result<PathBuf> {
 
 pub fn setup_home_config(force: bool) -> Result<()> {
     let home_config_dir = home_dir()?.join(consts::HOME_CONFIG_DIR);
-    let home_config_file = home_config_dir.join(consts::BAK8_CONFIG_FILENAME);
+    let home_config_file = home_config_dir.join(consts::SOURCETRAIT_BACKUP_CONFIG_FILENAME);
 
     if !home_config_dir.exists() {
         fs::create_dir_all(&home_config_dir)
@@ -469,7 +469,7 @@ pub fn setup_home_config(force: bool) -> Result<()> {
 pub fn backup_storage_check_paths(backup_storage_dir: &Path) -> Vec<PathBuf> {
     vec![
         backup_storage_dir.to_path_buf(),
-        backup_storage_dir.join(consts::BAK8_FS_VERSION_FILENAME),
+        backup_storage_dir.join(consts::SOURCETRAIT_BACKUP_FS_VERSION_FILENAME),
     ]
 }
 

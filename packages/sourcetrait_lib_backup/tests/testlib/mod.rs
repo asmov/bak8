@@ -6,16 +6,16 @@ use sourcetrait_testing::{self as testing, prelude::*};
 use sourcetrait_lib_backup as lib_backup;
 use whoami;
 
-pub(crate) const STRG_BAK8: &'static str = "strg/bak8";
+pub(crate) const STRG_SOURCETRAIT_BACKUP: &'static str = "strg/sourcetrait/backup";
 pub(crate) const TESTLIB: &'static str = "testlib";
 pub(crate) const TESTUSR: &'static str = "testusr";
 pub(crate) const SOURCE_PREFIX: &'static str = "source-";
 pub(crate) const HOME_TESTUSR: &'static str = "home/testusr";
 pub(crate) const MOCK_FS_DIRNAME: &'static str = "mock-fs";
 /// The test-run's temporary directory
-pub(crate) const ENV_BAK8_TEST_TMP_DIR: &'static str = "BAK8_TEST_TMP_DIR";
+pub(crate) const ENV_SOURCETRAIT_BACKUP_TEST_TMP_DIR: &'static str = "SOURCETRAIT_BACKUP_TEST_TMP_DIR";
 /// Where a mock filesystem is located
-pub(crate) const ENV_BAK8_TEST_SOURCE_ROOT: &'static str = "BAK8_TEST_SOURCE_ROOT";
+pub(crate) const ENV_SOURCETRAIT_BACKUP_TEST_SOURCE_ROOT: &'static str = "SOURCETRAIT_BACKUP_TEST_SOURCE_ROOT";
 
 pub(crate) static GROUP_TESTLIB: testing::Group = testing::group!(TESTLIB, Integration, {
     .using_fixture_dir()
@@ -47,7 +47,7 @@ pub(crate) fn bak8_backup(cli: &lib_backup::cli::Cli, config: &lib_backup::confi
 }
 
 pub(crate) fn setup_backup_dir(test: &testing::Test, config: &lib_backup::config::BackupConfig) {
-    lib_backup::Bak8Path::StorageDir(test.temp_dir().join(STRG_BAK8)).setup(config).unwrap();
+    lib_backup::Bak8Path::StorageDir(test.temp_dir().join(STRG_SOURCETRAIT_BACKUP)).setup(config).unwrap();
 }
 
 pub(crate) fn make_scheduled_backup_cli(_test: &testing::Test) -> lib_backup::cli::Cli {
@@ -63,7 +63,7 @@ pub(crate) fn make_config(test: &testing::Test, source_version: u8) -> lib_backu
     let username = lib_backup::sys::username();
     let usergroup = lib_backup::sys::usergroup();
     lib_backup::config::BackupConfig {
-        backup_storage_dir: test.temp_dir().join(STRG_BAK8)
+        backup_storage_dir: test.temp_dir().join(STRG_SOURCETRAIT_BACKUP)
             .to_str().unwrap().to_string(),
         storage_admin_user: username.to_string(),
         backup_users_group: usergroup.to_string(),
@@ -134,7 +134,7 @@ pub(crate) fn setup_incremental_backup_test(test: &mut testing::Test) {
     );
 
     let earlier_backup_run_dir = lib_backup::paths::Bak8Path::backup(
-        test.temp_dir().join(STRG_BAK8),
+        test.temp_dir().join(STRG_SOURCETRAIT_BACKUP),
         lib_backup::backup::BackupType::Full,
         &earlier_run_name);
 
@@ -167,7 +167,7 @@ pub(crate) fn resolve_test_remote() -> &'static lib_backup::Remote {
 pub(crate) fn setup_test_remote(config: &lib_backup::config::BackupConfig) -> lib_backup::config::BackupConfigRemote {
     let remote = resolve_test_remote();
     let temp_dir = lib_backup::cmd::ssh_run::ssh_temp_dir(&remote).unwrap();
-    let storage_dir = lib_backup::Bak8Path::RemoteStorageDir { remote: remote.clone(), storage_dir: temp_dir.join(STRG_BAK8) };
+    let storage_dir = lib_backup::Bak8Path::RemoteStorageDir { remote: remote.clone(), storage_dir: temp_dir.join(STRG_SOURCETRAIT_BACKUP) };
 
     storage_dir.setup(config).unwrap();
 
@@ -219,7 +219,7 @@ pub(crate) fn make_sync_config(
 pub(crate) fn expected_backup_ouput_dir(test: &testing::Test, backup_type: lib_backup::BackupType, output: &lib_backup::BackupJobOutput
 ) -> PathBuf {
     test.temp_dir()
-        .join(STRG_BAK8)
+        .join(STRG_SOURCETRAIT_BACKUP)
         .join(backup_type.subdir_name())
         .join(whoami::hostname().unwrap())
         .join(whoami::username().unwrap())

@@ -3,10 +3,11 @@
 ./bravo
 ./bravo/.betty
 ./.config
-./.config/bak8
+./.config/sourcetrait
+./.config/sourcetrait/backup
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./alpha/alpha.txt
 061b67d6e7ab579da2610e27e631aa4beda1ffe75c0a1b3f3f1c0b97780b4052  ./bravo/.betty/.betty
 b9dd960c1753459a78115d3cb845a57d924b6877e805b08bd01086ccdf34433c  ./.charlie
-586d67e2736ef0c75fb7353aef77bf265f92d7bcca5d67ca2f96ae930e1e6d7e  ./.config/bak8/bak8.toml
+586d67e2736ef0c75fb7353aef77bf265f92d7bcca5d67ca2f96ae930e1e6d7e  ./.config/sourcetrait/backup/backup.toml
 56bf76e457eaddee10aa010996eadb4e17f4bc5b858bb3f831073d911a1a04de  ./delta.txt
 aef418814969583e41a4651bcbc4c8d5f5e17d951fd168a5e2bdf1a0d042cf93  ./source-2.txt

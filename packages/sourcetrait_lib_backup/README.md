@@ -1,9 +1,9 @@
-Bak8
+SourceTrait Backup
 ================================================================================
-[![Latest Version: bak8]][crates.io:bak8]
+[![Latest Version: sourcetrait_backup]][crates.io:sourcetrait_backup]
 
-[Latest Version: bak8]: https://img.shields.io/crates/v/bak8.svg
-[crates.io:bak8]: https://crates.io/crates/bak8
+[Latest Version: sourcetrait_backup]: https://img.shields.io/crates/v/sourcetrait_lib_backkup.svg
+[crates.io:sourcetrait_backup]: https://crates.io/crates/sourcetrait_lib_backup
 
 *Rotational backup system for workstation users*  
 
@@ -11,7 +11,7 @@ Bak8
 
 ## Usage
 
-`bak8 [OPTIONS] <COMMAND>`
+`sourcetrait backup [OPTIONS] <COMMAND>`
 
 Manages a rotational backup system.
 
@@ -21,7 +21,7 @@ Manages a rotational backup system.
 - `log`      Reviews logs
 - `summary`  Reviews a summary of recent backups
 
-### `bak8 backup` `<SUBCOMMAND> <NAME>`
+### `sourcetrait backup` `<SUBCOMMAND> <NAME>`
 
 `NAME`: The name of the backup configuration to operate on.
 
@@ -30,7 +30,7 @@ Manages a rotational backup system.
 - `full` Manually performs a full backup
 - `incremental` Manually performs an incremental backup
 
-### `bak8 config` `<SUBCOMMAND>`
+### `sourcetrait backup config` `<SUBCOMMAND>`
 
 #### Subcommands
 - `setup` Initializes the user's bak8 configuration
@@ -39,18 +39,9 @@ Manages a rotational backup system.
 - `show` Displays the configuration file contents
 
 
-Repository
---------------------------------------------------------------------------------
-Contributors, please review [ASMOV.md](./ASMOV.md).  
-
-Found a bug? Search for an existing issue on GitHub.  
-If an issue exists, chime in to add weight to it.  
-If an issue does not exist, create one and tell us how to reproduce the bug. 
-
-
 License (AGPL3)
 --------------------------------------------------------------------------------
-bak8: Rotational backup system for workstation users  
+SourceTrait Backup: Rotational backup system for workstation users  
 Copyright (C) 2024-2025 Asmov LLC  
 
 This program is free software: you can redistribute it and/or modify
@@ -66,7 +57,3 @@ GNU Affero General Public License for more details.
 You should have received a [copy](./LICENSE-AGPL-3.txt) of the GNU Affero General Public License
 along with this program.  If not, see https://www.gnu.org/licenses/.
 
-
-Trademark
---------------------------------------------------------------------------------
-*bak8* is a pending trademark of Asmov LLC.

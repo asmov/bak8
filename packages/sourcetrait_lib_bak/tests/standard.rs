@@ -4,7 +4,7 @@ mod common;
 mod tests {
     use super::common::*;
     use sourcetrait_lib_backup_os as cross;
-    use bak8_bak as bak;
+    use sourcetrait_lib_bak as bak;
     use clap::Parser;
     use std::path::PathBuf;
 
