@@ -261,9 +261,9 @@ impl Bak8Path {
 
                     crate::cmd::ssh_run::ssh_write_file(remote, &fs_version_file, &crate::consts::SOURCETRAIT_BACKUP_FS_VERSION.to_string())
                         .map_err(|e| Error::remote_cmd(e, remote, &format!(
-                            "Unable to write bak8 filesystem version file {}", &fs_version_file.tik_path())))?;
+                            "Unable to write sourcetrait backup filesystem version file {}", &fs_version_file.tik_path())))?;
                 } else {
-                    // check the remote's bak8 file system version and throw an error if we need an upgrade
+                    // check the remote's sourcetrait backup file system version and throw an error if we need an upgrade
                     let remote_fs_version = crate::cmd::ssh_run::ssh_file_contents(remote, &fs_version_file)?
                         .ok_or_else(|| Error::remote_cmd_err(remote, &format!(
                             "Failed to read remote file system version file {}", &fs_version_file.tik_path())))?;

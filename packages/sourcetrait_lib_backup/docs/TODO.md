@@ -1,7 +1,7 @@
 TODO: SourceTrait CLI: Backup
 ===============================================================================
 
-## fix: Setup doesn't create subdirs for local system or bak8 user
+## fix: Setup doesn't create subdirs for local system or backup user
 
 Breaks runs. Attributes should be appropriate for each subdir.
 

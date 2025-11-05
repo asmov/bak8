@@ -3,10 +3,10 @@ name = "sourcetrait_lib_backup_os"
 version = "0.2.0"
 description = "Platform specific library for SourceTrait Backup"
 authors = ["Asmov LLC <development.pub@asmov.software>"]
-repository = "https://github.com/asmov/bak8"
-homepage = "https://github.com/asmov/bak8/tree/dev/packages/bak8-lib-os"
+repository = "https://github.com/sourcetrait/sourcetrait_cli"
+homepage = "https//sourcetrait.com"
 license = "AGPL-3.0-or-later"
-keywords = ["bak8"]
+keywords = ["sourcetrait", "backup", "os"]
 edition = "2024"
 
 [dependencies]

@@ -48,15 +48,15 @@ pub struct ManualBackupCommand {
 
 #[derive(Subcommand, Debug)]
 pub enum ConfigCommand {
-    #[command(name = "setup", about = "Initializes the user's bak8 configuration")]
+    #[command(name = "setup", about = "Initializes the user's backup configuration")]
     Setup,
-    #[command(name = "edit", about = "Opens the bak8 configuration in their editor")]
+    #[command(name = "edit", about = "Opens the backup configuration in their editor")]
     Edit,
-    #[command(name = "verify", about = "Verifies the bak8 configuration")]
+    #[command(name = "verify", about = "Verifies the backup configuration")]
     Verify,
-    #[command(name = "install", about = "Performs superuser setup of bak8")]
+    #[command(name = "install", about = "Performs superuser setup of sourcetrait backup")]
     Install,
-    #[command(name = "show", about = "Displays the bak8 configuration")]
+    #[command(name = "show", about = "Displays the backup configuration")]
     Show
 }
 

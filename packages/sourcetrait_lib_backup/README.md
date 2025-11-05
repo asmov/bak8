@@ -33,8 +33,8 @@ Manages a rotational backup system.
 ### `sourcetrait backup config` `<SUBCOMMAND>`
 
 #### Subcommands
-- `setup` Initializes the user's bak8 configuration
-- `edit` Opens the bak8 configuration file in their editor
+- `setup` Initializes the user's backup configuration
+- `edit` Opens the backup configuration file in their editor
 - `verify` Verifies configuration
 - `show` Displays the configuration file contents
 

@@ -66,7 +66,7 @@ COLOR_GREEN='\033[0;32m'
 COLOR_NONE='\033[0m'
 
 log() {
-  log_prefix "bak8" "${1}"
+  log_prefix "backup" "${1}"
 }
 
 log_prefix() {
@@ -82,7 +82,7 @@ log_error_prefix() {
 }
 
 log_error() {
-  log_error_prefix "bak8" "${1}"
+  log_error_prefix "backup" "${1}"
   exit 1
 }
 

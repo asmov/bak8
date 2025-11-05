@@ -16,8 +16,8 @@ The SourceTrait Backup software suite includes the following filesystem backup t
 --------------------------------------------------------------------------------
 [![Latest Version: backup]][crates.io:backup]
 
-[Latest Version: bak8]: https://img.shields.io/crates/v/sourcetrait_lib_backup.svg
-[crates.io:bak8]: https://crates.io/crates/sourcetrait_lib_backup
+[Latest Version: sourcetrait_backup]: https://img.shields.io/crates/v/sourcetrait_lib_backup.svg
+[crates.io:sourcetrait_backup]: https://crates.io/crates/sourcetrait_lib_backup
 
 ### Usage
 

@@ -7,8 +7,8 @@ user data on desktop operating systems.
 The primary OS target is Linux, with MacOS and Windows (WSL) as secondary
 targets.
 
-The Bak8 suite consists of two CLI tools:
-- bak8
+The SourceTrait Backup suite consists of two CLI tools:
+- sourcetrait_backup
 - bak
 
 The flagship tool, `sourcetrait backup` can be used to run both manual and scheduled

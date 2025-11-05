@@ -46,7 +46,7 @@ impl Cli {
             Some(dir) => {
                 // handle passing Cli parameters manually
                 if dir.to_str().expect(E_STR) == "-" {
-                    cross::user_app_data_dir(true, crate::BAK8.into())
+                    cross::user_app_data_dir(true, crate::SOURCETRAIT_BACKUP.into())
                         .expect("Failed to get user app data directory")
                 } else {
                     dir.clone()
@@ -82,7 +82,7 @@ fn validate_file(path: &str) -> Result<PathBuf, String> {
 
 fn validate_dir(path: &str) -> Result<PathBuf, String> {
     let path = if path == "-" {
-        cross::user_app_data_dir(true, crate::BAK8.into())
+        cross::user_app_data_dir(true, crate::SOURCETRAIT_BACKUP.into())
             .map_err(|e| e.to_string())?
     } else {
         validate_path(path, "Directory")?

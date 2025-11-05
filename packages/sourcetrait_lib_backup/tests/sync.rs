@@ -19,7 +19,7 @@ mod tests {
         testlib::setup_backup_dir(test, config);
     }
 
-    //fn teardown_sync_test(_test: &mut testing::Test, cfg_remote: &bak8::config::BackupConfigRemote) {
+    //fn teardown_sync_test(_test: &mut testing::Test, cfg_remote: &lib_backup::config::BackupConfigRemote) {
     //    testlib::teardown_test_remote(cfg_remote);
     //}
 

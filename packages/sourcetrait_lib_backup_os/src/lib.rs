@@ -20,7 +20,7 @@ pub fn sanitize_cmd_path(path: &Path) -> &str {
     }
 }
 
-/// Retrieves the bak8 data directory if possible, otherwise None.
+/// Retrieves the backup data directory if possible, otherwise None.
 pub fn user_app_data_dir(mkdir: bool, app_subdirs: PathBuf) -> io::Result<PathBuf> {
     #[cfg(target_os = "linux")]
     let os_data_dir = linux_user_app_data_dir(mkdir)?;

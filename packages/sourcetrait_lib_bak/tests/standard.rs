@@ -214,7 +214,7 @@ mod tests {
             bak::cli::Cli::parse_from(["-f", "-q", "-n", "3", source_filepath.to_str().unwrap(), "-"])
         ).unwrap();
 
-        let app_data_dir = cross::user_app_data_dir(true, bak::BAK8.into())
+        let app_data_dir = cross::user_app_data_dir(true, bak::SOURCETRAIT_BACKUP.into())
             .expect("Failed to get user app data directory");
         let mirror_dir = bak::mirror_dir(&app_data_dir, &tmpdir.join("source.txt"), false).unwrap();
 

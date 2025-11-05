@@ -11,7 +11,7 @@ function Log {
         $Output
     )
 
-    Write-Host "[$(Get-Date -Format "HH:mm:ss") bak8] " -NoNewline -ForegroundColor Green
+    Write-Host "[$(Get-Date -Format "HH:mm:ss") backup] " -NoNewline -ForegroundColor Green
     Write-Host $Output
 }
 

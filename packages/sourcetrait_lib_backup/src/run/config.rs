@@ -37,7 +37,7 @@ fn run_config_setup(config_path: &Path, force: bool) -> Result<bool> {
 
     println!("Config file created: {}", config_path.tikn_path());
     println!("Edit your config with {}\nValidate your config with {}",
-        "bak8 config edit".tikn_cmd(), "bak8 config verify".tikn_cmd());
+        "srctrait backup config edit".tikn_cmd(), "srctrait backup config verify".tikn_cmd());
 
     if confirm("Would you like to edit it now?")? {
         run_config_edit(config_path)
@@ -84,7 +84,7 @@ fn handle_config_file_not_found(config_path: &Path) -> bool {
         eprintln!("{} Config file not found: {}\n       Run {} to create it.",
             "error:".tikn_error(),
             config_path.to_str().unwrap().tikn_path(),
-            "bak8 config setup".tikn_cmd());
+            "srctrait backup config setup".tikn_cmd());
         true
     } else {
         false
@@ -112,12 +112,12 @@ fn needs_install(config: &BackupConfig) -> bool {
     verify_backup_dirs(config).is_err()
 }
 
-/// Ran with superuser privileges to install bak8. (sudo)
+/// Ran with superuser privileges to install sourcetrait backup. (sudo)
 // Keep operations to a minimum to avoid security risks.
 fn run_config_install(config_path: &Path) -> Result<bool> {
     let config = match verify_config_file(config_path)? {
         Some(config) => config,
-        None => return Ok(false), // should we tell them to run `bak8 config setup` again?
+        None => return Ok(false), // should we tell them to run `sourcetrait backup config setup` again?
     };
 
     if needs_install(&config) {
@@ -141,7 +141,7 @@ fn run_config_verify(config_path: &Path) -> Result<bool> {
 
     if needs_install(&config) {
         eprintln!("Storage directories need to be installed.");
-        eprintln!("Run {} to install storage directories.", "sudo bak8 config install".tikn_cmd());
+        eprintln!("Run {} to install storage directories.", "sudo srctrait backup config install".tikn_cmd());
         Ok(false)
     } else {
         Ok(true)

@@ -10,7 +10,7 @@ pub enum Error {
     #[error("Config parsing error :: {cause}")]
     ConfigParse { cause: String },
 
-    #[error("Config file {} not found. Have you ran {} yet?", path.tik_path(), "bak8 config".tik_cmd())]
+    #[error("Config file {} not found. Have you ran {} yet?", path.tik_path(), "srctrait backup config".tik_cmd())]
     DefaultConfigFileNotFound { path: String },
 
     #[error("Config file {} not found.", path.tik_path())]
