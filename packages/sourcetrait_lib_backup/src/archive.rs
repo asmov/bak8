@@ -6,7 +6,7 @@ pub struct ArchiveJob {
     pub(crate) backup_run_name: BackupRunName,
     pub(crate) source_dir: PathBuf,
     /// Bak8Path::Archive
-    pub(crate) dest_filepath: Bak8Path,
+    pub(crate) dest_filepath: SourceTraitBackupPath,
 }
 
 #[derive(Debug)]
@@ -14,7 +14,7 @@ pub struct ArchiveJobOutput {
     pub backup_run_name: BackupRunName,
     pub source_dir: PathBuf,
     /// Bak8Path::Archive
-    pub dest_filepath: Bak8Path,
+    pub dest_filepath: SourceTraitBackupPath,
     pub checksum: String,
 }
 
@@ -77,7 +77,7 @@ impl ArchiveJobOutput {
     pub fn new(
         backup_run_name: BackupRunName,
         source_dir: PathBuf,
-        dest_filepath: Bak8Path,
+        dest_filepath: SourceTraitBackupPath,
         checksum: String,
     ) -> Self {
         Self {

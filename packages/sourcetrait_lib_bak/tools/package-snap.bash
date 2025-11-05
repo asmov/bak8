@@ -20,9 +20,9 @@ snapcraft
 
 mv "${PROJECT_DIR}"/*.snap "${SNAP_DIR}"
 
-mv "${SNAP_DIR}"/bak8_*_amd64.snap "${SNAP_DIR}/bak8_${CARGO_VERSION}_amd64.snap"
-mv "${SNAP_DIR}"/bak8_*_arm64.snap "${SNAP_DIR}/bak8_${CARGO_VERSION}_arm64.snap"
-mv "${SNAP_DIR}"/bak8_*_armhf.snap "${SNAP_DIR}/bak8_${CARGO_VERSION}_armhf.snap"
+mv "${SNAP_DIR}"/sourcetrait_backup_*_amd64.snap "${SNAP_DIR}/sourcetrait_backup_${CARGO_VERSION}_amd64.snap"
+mv "${SNAP_DIR}"/sourcetrait_backup_*_arm64.snap "${SNAP_DIR}/sourcetrait_backup_${CARGO_VERSION}_arm64.snap"
+mv "${SNAP_DIR}"/sourcetrait_backup_*_armhf.snap "${SNAP_DIR}/sourcetrait_backup_${CARGO_VERSION}_armhf.snap"
 
 for snap in "${SNAP_DIR}"/*.snap; do
     sha256sum -b "${snap}" > "${snap}.sha256"

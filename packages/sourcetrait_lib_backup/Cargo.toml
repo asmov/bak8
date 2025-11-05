@@ -11,26 +11,25 @@ keywords = ["sourcetrait", "lib", "backup", "copy"]
 edition = "2024"
 
 [dependencies]
-sourcetrait_lib_backup_os = { version="0", path = "../sourcetrait_lib_backup_os" }
-chrono = "0.4"
-cron = "0.15"
-serde = { version = "1", features = ["derive"] }
-thiserror = "2"
-toml = "0.8"
-validator = { version = "0.20", features = ["derive"] }
-shellexpand = "3"
-colored = "3"
-clap = { version = "4", features = ["derive"] }
-lazy_static = "1"
-whoami = "2.0.0-pre.2"
-strum = { version = "0.27", features = ["derive"] }
-strip-ansi-escapes = "0.2"
-semver = "1"
-sha256 = "1"
-uzers = "0.12"
+chrono.workspace = true
+cron.workspace = true
+colored.workspace = true
+clap.workspace = true
+lazy_static.workspace = true
+whoami.workspace = true
+strum.workspace = true
+strip-ansi-escapes.workspace = true
+serde.workspace = true
+sourcetrait_crossplat.workspace = true
+semver.workspace = true
+sha256.workspace = true
+shellexpand.workspace = true
+thiserror.workspace = true
+toml.workspace = true
+uzers.workspace = true
+validator.workspace = true
 
 [dev-dependencies]
-sourcetrait_testing = "4"
-lazy_static = "1"
-dir-diff = "0.3"
-regex = "1"
+sourcetrait_testing.workspace = true
+dir-diff.workspace = true
+regex.workspace = true

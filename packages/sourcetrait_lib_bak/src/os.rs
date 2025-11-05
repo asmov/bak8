@@ -14,8 +14,8 @@ pub fn print_diff(source: &Path, file_b: &Path) -> Result<(), crate::Error> {
         .arg("diff")
         .arg("--no-index")
         .arg("--color")
-        .arg(sanitize_cmd_path(file_b))
-        .arg(sanitize_cmd_path(source))
+        .arg(cross::PLATFORM.sanitize_path(file_b)?)
+        .arg(cross::PLATFORM.sanitize_path(source)?)
         .output();
 
     match output {
@@ -46,8 +46,8 @@ pub fn print_diff(source: &Path, file_b: &Path) -> Result<(), crate::Error> {
     } else if cfg!(target_os = "windows") {
         let output = std::process::Command::new("powershell")
             .arg("compare-object")
-            .arg(format!("(get-content {})", sanitize_cmd_path(file_b)))
-            .arg(format!("(get-content {})", sanitize_cmd_path(source)))
+            .arg(format!("(get-content {})", cross::PLATFORM.sanitize_path(file_b)?.to_string_lossy()))
+            .arg(format!("(get-content {})", cross::PLATFORM.sanitize_path(source)?.to_string_lossy()))
             .output()
             .map_err(|e| crate::Error::Generic(e.to_string()))?;
 

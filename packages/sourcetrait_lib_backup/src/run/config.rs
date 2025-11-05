@@ -65,7 +65,7 @@ fn confirm(question: &str) -> Result<bool> {
 fn run_config_edit(config_path: &Path) -> Result<bool> {
     eprintln!("Launching editor for config file: {}", config_path.tikn_path());
 
-    let output = PLATFORM.run_best_editor(config_path, false)
+    let output = cross::PLATFORM.run_best_editor(config_path, false)
         .map_err(|e| Error::Generic(format!("Failed to run editor :: {e}")))?
         .unwrap_output();
 
@@ -121,7 +121,7 @@ fn run_config_install(config_path: &Path) -> Result<bool> {
     };
 
     if needs_install(&config) {
-        let storage_dir = Bak8Path::StorageDir(config.backup_storage_dir_path());
+        let storage_dir = SourceTraitBackupPath::StorageDir(config.backup_storage_dir_path());
         storage_dir.setup(&config)?;
     }
 

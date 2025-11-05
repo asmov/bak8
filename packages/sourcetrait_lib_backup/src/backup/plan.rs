@@ -9,10 +9,10 @@ impl BackupJob {
         cfg_backup: &BackupConfigBackup,
         config: &BackupConfig
     ) -> Result<JobQueueEntry> {
-        let bak8_storage_dir = config.bak8_storage_dir();
+        let sourcetrait_backup_storage_dir = config.sourcetrait_backup_storage_dir();
         let run_name = BackupRunName::new(datetime_now(), hostname(), username(), &cfg_backup.name);
         let source_dir = cfg_backup.source_dir_path();
-        let dest_dir = Bak8Path::backup(&bak8_storage_dir, backup_type, &run_name);
+        let dest_dir = SourceTraitBackupPath::backup(&sourcetrait_backup_storage_dir, backup_type, &run_name);
         let incremental_source_dir = if backup_type == BackupType::Incremental {
             Some(find_last_backup(
                 BackupType::Full,
@@ -26,7 +26,7 @@ impl BackupJob {
         };
 
         let archive_source_dir = &dest_dir;
-        let archive_dest_filepath = Bak8Path::archive(&bak8_storage_dir, &run_name);
+        let archive_dest_filepath = SourceTraitBackupPath::archive(&sourcetrait_backup_storage_dir, &run_name);
         let archive_run_name = &run_name;
 
         let mut series = vec![
@@ -72,7 +72,7 @@ impl BackupJob {
                                     source_dir: source_dir.clone(),
                                     remote_incremental_source_dir: None,
                                     remote_backup_storage_dir: PathBuf::from(&cfg_remote.backup_storage_dir),
-                                    remote_dest_dir: Bak8Path::backup(&cfg_remote.backup_storage_dir,
+                                    remote_dest_dir: SourceTraitBackupPath::backup(&cfg_remote.backup_storage_dir,
                                         backup_type, &run_name)
                                 }),
                                 status: JobStatus::Ready,
@@ -90,7 +90,7 @@ impl BackupJob {
                                     },
                                     backup_run_name: archive_run_name.clone(),
                                     source_filepath: archive_dest_filepath.to_path_buf(),
-                                    remote_dest_filepath: Bak8Path::archive(&cfg_remote.backup_storage_dir, &archive_run_name)
+                                    remote_dest_filepath: SourceTraitBackupPath::archive(&cfg_remote.backup_storage_dir, &archive_run_name)
                                         .to_path_buf()
                                 }),
                                 status: JobStatus::Ready,
@@ -112,7 +112,7 @@ impl BackupJob {
                                 backup_run_name: run_name.clone(),
                                 source_dir: source_dir.clone(),
                                 remote_incremental_source_dir: Some(incremental_source_dir.as_ref().unwrap().to_path_buf()),
-                                remote_dest_dir: Bak8Path::backup_dir(&cfg_remote.backup_storage_dir,
+                                remote_dest_dir: SourceTraitBackupPath::backup_dir(&cfg_remote.backup_storage_dir,
                                     BackupPathParts::from_run(backup_type, &run_name))
                             }),
                             status: JobStatus::Ready,

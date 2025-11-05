@@ -42,12 +42,12 @@ impl<'func> TestlibModuleBuilder for testing::ModuleBuilder<'func> {
     }
 }
 
-pub(crate) fn bak8_backup(cli: &lib_backup::cli::Cli, config: &lib_backup::config::BackupConfig) -> lib_backup::job::JobResults {
+pub(crate) fn sourcetrait_backup_backup(cli: &lib_backup::cli::Cli, config: &lib_backup::config::BackupConfig) -> lib_backup::job::JobResults {
     lib_backup::run::backup::run_backup(&cli, &lib_backup::cli::BackupCommand::Scheduled, Some(config))
 }
 
 pub(crate) fn setup_backup_dir(test: &testing::Test, config: &lib_backup::config::BackupConfig) {
-    lib_backup::Bak8Path::StorageDir(test.temp_dir().join(STRG_SOURCETRAIT_BACKUP)).setup(config).unwrap();
+    lib_backup::SourceTraitBackupPath::StorageDir(test.temp_dir().join(STRG_SOURCETRAIT_BACKUP)).setup(config).unwrap();
 }
 
 pub(crate) fn make_scheduled_backup_cli(_test: &testing::Test) -> lib_backup::cli::Cli {
@@ -120,7 +120,7 @@ pub(crate) fn setup_incremental_backup_test(test: &mut testing::Test) {
     setup_backup_dir(test, &config);
 
     let cli = make_scheduled_backup_cli(test);
-    let mut results = bak8_backup(&cli, &config).unwrap();
+    let mut results = sourcetrait_backup_backup(&cli, &config).unwrap();
     assert_eq!(2, results.len());
     results.pop().unwrap();
     let backup_output = match results.pop().unwrap() {
@@ -133,7 +133,7 @@ pub(crate) fn setup_incremental_backup_test(test: &mut testing::Test) {
         &config.backups[0].name,
     );
 
-    let earlier_backup_run_dir = lib_backup::paths::Bak8Path::backup(
+    let earlier_backup_run_dir = lib_backup::paths::SourceTraitBackupPath::backup(
         test.temp_dir().join(STRG_SOURCETRAIT_BACKUP),
         lib_backup::backup::BackupType::Full,
         &earlier_run_name);
@@ -167,7 +167,7 @@ pub(crate) fn resolve_test_remote() -> &'static lib_backup::Remote {
 pub(crate) fn setup_test_remote(config: &lib_backup::config::BackupConfig) -> lib_backup::config::BackupConfigRemote {
     let remote = resolve_test_remote();
     let temp_dir = lib_backup::cmd::ssh_run::ssh_temp_dir(&remote).unwrap();
-    let storage_dir = lib_backup::Bak8Path::RemoteStorageDir { remote: remote.clone(), storage_dir: temp_dir.join(STRG_SOURCETRAIT_BACKUP) };
+    let storage_dir = lib_backup::SourceTraitBackupPath::RemoteStorageDir { remote: remote.clone(), storage_dir: temp_dir.join(STRG_SOURCETRAIT_BACKUP) };
 
     storage_dir.setup(config).unwrap();
 

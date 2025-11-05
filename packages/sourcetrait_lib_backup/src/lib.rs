@@ -18,10 +18,10 @@ pub use run::run_main as run;
 pub use error::{Error, Result};
 pub use archive::ArchiveJobOutput;
 pub use backup::{BackupType, BackupRunName, BackupJobOutput};
-pub use paths::Bak8Path;
+pub use paths::SourceTraitBackupPath;
 pub use job::JobOutput;
 pub use sync::{Remote, Platform, SyncBackupJobOutput, SyncArchiveJobOutput};
-pub(crate) use sourcetrait_lib_backup_os::prelude::*;
+pub(crate) use sourcetrait_crossplat::{self as cross, prelude::*};
 
 pub mod consts {
     pub const SOURCETRAIT_BACKUP: &'static str = "backup";

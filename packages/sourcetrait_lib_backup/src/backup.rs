@@ -81,7 +81,7 @@ pub struct BackupJob {
     pub(crate) source_dir: PathBuf,
     pub(crate) incremental_source_dir: Option<PathBuf>,
     /// Bak8Path::Backup
-    pub(crate) dest_dir: Bak8Path,
+    pub(crate) dest_dir: SourceTraitBackupPath,
 }
 
 impl JobTrait for BackupJob {
@@ -126,7 +126,7 @@ pub struct BackupJobOutput {
     pub source_dir: PathBuf,
     pub incremental_source_dir: Option<PathBuf>,
     /// Bak8Path::Backup
-    pub dest_dir: Bak8Path,
+    pub dest_dir: SourceTraitBackupPath,
 }
 
 impl JobOutputTrait for BackupJobOutput {}
@@ -138,8 +138,8 @@ fn find_last_backup<P: AsRef<Path>>(
     username: &str,
     catalogue: &str,
     backup_storage_dir: P
-) -> Option<Bak8Path> {
-    let backup_dir_base = Bak8Path::backup_dir(&backup_storage_dir,
+) -> Option<SourceTraitBackupPath> {
+    let backup_dir_base = SourceTraitBackupPath::backup_dir(&backup_storage_dir,
         BackupPathParts::new(backup_type, hostname, username, catalogue, None));
 
     fn find_latest_num_dir<P: AsRef<Path>>(path: &P) -> Option<PathBuf> {
@@ -184,7 +184,7 @@ fn find_last_backup<P: AsRef<Path>>(
 
     backup_runs.sort_by(|a, b| a.as_str().cmp(b.as_str()).reverse());
     backup_runs.first()
-        .and_then(|backup_run_name| Some(Bak8Path::backup(&backup_storage_dir, backup_type, backup_run_name)))
+        .and_then(|backup_run_name| Some(SourceTraitBackupPath::backup(&backup_storage_dir, backup_type, backup_run_name)))
 }
 
 
@@ -201,7 +201,7 @@ pub(crate) fn backup_job_due(
         &config.backup_storage_dir_path());
 
     let last_full_backup = match last_full_backup {
-        Some(bak8path) => bak8path,
+        Some(sourcetrait_backup_path) => sourcetrait_backup_path,
         None => return Ok(Some(BackupJob::plan(BackupType::Full, &cfg_backup, config)?))
     };
 

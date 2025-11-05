@@ -37,7 +37,7 @@ mod tests {
 
         let cli = testlib::make_scheduled_backup_cli(&test);
         let config = testlib::make_sync_config(&test, &cfg_remote, 1);
-        let mut results = testlib::bak8_backup(&cli, &config).unwrap();
+        let mut results = testlib::sourcetrait_backup_backup(&cli, &config).unwrap();
 
         assert_eq!(4, results.len(), "{:#?}", results);
         let lib_backup::JobOutput::SyncArchive(sync_archive_output) = results.pop().unwrap() else {
@@ -55,9 +55,9 @@ mod tests {
 
         /* todo: verify file permissions:
             installed:
-            - backup storage dir: 0750 user:user or root:bak8usr
-            - backup storage subdirs: 0750 user:user or root:bak8user
-            - backup storage subdirs localhost dir: 0750 user:user or root:bak8usr
+            - backup storage dir: 0750 user:user or root:bakusr
+            - backup storage subdirs: 0750 user:user or root:bakuser
+            - backup storage subdirs localhost dir: 0750 user:user or root:bakusr
               - full, incremental, archive, logs
             prepared (context):
             - full backup host/user dir: 0700 user:user

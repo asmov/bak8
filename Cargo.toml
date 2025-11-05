@@ -3,8 +3,35 @@ resolver = "2"
 members = [
     "packages/sourcetrait_lib_bak",
     "packages/sourcetrait_lib_backup",
-    "packages/sourcetrait_lib_backup_os"
+    "packages/sourcetrait_crossplat"
 ]
+
+[workspace.dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+chrono = "0.4"
+colored = "3"
+cron = "0.15"
+dir-diff = "0.3"
+directories = "6"
+file_diff = "1"
+function_name = "0.3"
+lazy_static = "1"
+regex = "1"
+semver = "1"
+serde = { version = "1", features = ["derive"] }
+sha256 = "1"
+shellexpand = "3"
+sourcetrait_crossplat = { version="1", path = "packages/sourcetrait_crossplat" }
+sourcetrait_testing = "4"
+snafu = "0.8"
+strip-ansi-escapes = "0.2"
+strum = { version = "0.27", features = ["derive"] }
+thiserror = "2"
+toml = "0.8"
+uzers = "0.12"
+validator = { version = "0.20", features = ["derive"] }
+whoami = "2.0.0-pre.2"
 
 [profile.release]
 strip = "symbols"

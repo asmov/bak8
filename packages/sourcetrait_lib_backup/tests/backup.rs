@@ -26,7 +26,7 @@ mod tests {
 
         let cli = testlib::make_scheduled_backup_cli(&test);
 
-        let mut results = testlib::bak8_backup(&cli, &config).unwrap();
+        let mut results = testlib::sourcetrait_backup_backup(&cli, &config).unwrap();
         assert_eq!(2, results.len());
         let JobOutput::Archive(archive_output) = results.pop().unwrap() else { panic!() };
         let JobOutput::Backup(backup_output) = results.pop().unwrap() else { panic!() };
@@ -40,7 +40,7 @@ mod tests {
         assert_eq!(true, archive_output.dest_filepath.as_path().exists());
 
         // try running it again. it should not create a new backup for "today"
-        let results = testlib::bak8_backup(&cli, &config).unwrap();
+        let results = testlib::sourcetrait_backup_backup(&cli, &config).unwrap();
         assert_eq!(0, results.len());
     }
 
@@ -54,7 +54,7 @@ mod tests {
         // full backup was ran during test.setup(). now run an incremental ...
         let cli = testlib::make_scheduled_backup_cli(&test);
         let config = testlib::make_config(&test, 2);
-        let mut results = testlib::bak8_backup(&cli, &config).unwrap();
+        let mut results = testlib::sourcetrait_backup_backup(&cli, &config).unwrap();
 
         assert_eq!(1, results.len(), "{:#?}", results);
         let JobOutput::Backup(backup_output) = results.pop().unwrap() else { panic!() };
@@ -78,7 +78,7 @@ mod tests {
             "Modified permissions: alpha/alpha.txt");
 
         // try running it again. it should not create a new backup for "today"
-        let results = testlib::bak8_backup(&cli, &config).unwrap();
+        let results = testlib::sourcetrait_backup_backup(&cli, &config).unwrap();
         assert_eq!(0, results.len());
     }
 }

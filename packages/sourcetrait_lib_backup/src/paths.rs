@@ -14,7 +14,7 @@ pub mod consts {
     pub const BACKUP_INCREMENTAL_DIRNAME: &'static str = "incremental";
     pub const BACKUP_LOGS_DIRNAME: &'static str = "logs";
     pub const SOURCETRAIT_BACKUP_FS_VERSION_FILENAME: &'static str = ".backup_fs_version";
-    pub const ENV_BAK8_HOME: &'static str = "BACKUP_HOME";
+    pub const ENV_SOURCETRAIT_BACKUP_HOME: &'static str = "BACKUP_HOME";
     pub const TAR_XZ_EXTENSION: &'static str = "tar.xz";
     pub const SHA256_EXTENSION: &str = "sha256";
 }
@@ -60,7 +60,7 @@ impl BackupType {
 }
 
 #[derive(Debug, Clone)]
-pub enum Bak8Path {
+pub enum SourceTraitBackupPath {
     StorageDir(PathBuf),
     BackupDir{ storage_dir: PathBuf, path_parts: BackupPathParts, path: PathBuf },
     FullBackup{ storage_dir: PathBuf, run_name: BackupRunName, path: PathBuf},
@@ -72,13 +72,13 @@ pub enum Bak8Path {
     RemoteStorageDir{ remote: crate::sync::Remote, storage_dir: PathBuf },
 }
 
-impl AsRef<Path> for Bak8Path {
+impl AsRef<Path> for SourceTraitBackupPath {
     fn as_ref(&self) -> &Path {
         self.as_path()
     }
 }
 
-impl TikPath for Bak8Path {
+impl TikPath for SourceTraitBackupPath {
     fn tik_path(&self) -> String {
         self.as_path().tik_path()
     }
@@ -88,7 +88,7 @@ impl TikPath for Bak8Path {
     }
 }
 
-impl Bak8Path {
+impl SourceTraitBackupPath {
     pub fn storage_dir<P: AsRef<Path>>(storage_dir: P) -> Self {
         Self::StorageDir(storage_dir.as_ref().to_path_buf())
     }
@@ -189,7 +189,7 @@ impl Bak8Path {
 
     /// Reads the file system version file IF self is a [Bak8Path::FileSytemVersion].
     pub fn read_fs_version(&self) -> Result<semver::Version> {
-        assert!(matches!(self, Bak8Path::FileSytemVersion{..}), "Invalid path type for reading file system version");
+        assert!(matches!(self, SourceTraitBackupPath::FileSytemVersion{..}), "Invalid path type for reading file system version");
 
         fs::read_to_string(self.as_path())
             .map_err(|e| Error::file_io(e, self.as_path(), "Failed to read file system version file"))
@@ -250,7 +250,7 @@ impl Bak8Path {
                 }
             },
             Self::RemoteStorageDir { remote, storage_dir } => {
-                let fs_version_file = Bak8Path::fs_version(storage_dir);
+                let fs_version_file = SourceTraitBackupPath::fs_version(storage_dir);
 
                 // if the base dir or the version file don't exist ... run a full setup
                 if !crate::cmd::ssh_run::ssh_dirs_exist(remote, &backup_storage_check_paths(&storage_dir))? {
@@ -424,8 +424,8 @@ impl Bak8Path {
     }
 }
 
-impl From<Bak8Path> for PathBuf {
-    fn from(value: Bak8Path) -> Self {
+impl From<SourceTraitBackupPath> for PathBuf {
+    fn from(value: SourceTraitBackupPath) -> Self {
         value.to_path_buf()
     }
 }
@@ -435,8 +435,8 @@ pub fn expand_path(path_str: &str) -> Result<PathBuf> {
 }
 
 pub fn home_dir() -> Result<PathBuf> {
-    let home: PathBuf = if let Ok(bak8_home) = std::env::var(consts::ENV_BAK8_HOME) {
-        PathBuf::from(bak8_home)
+    let home: PathBuf = if let Ok(sourcetrait_backup_home) = std::env::var(consts::ENV_SOURCETRAIT_BACKUP_HOME) {
+        PathBuf::from(sourcetrait_backup_home)
     } else {
         option_env!("HOME")
             .ok_or_else(|| Error::FileIO {

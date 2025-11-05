@@ -10,7 +10,7 @@ pub struct SyncBackupJob {
     pub backup_run_name: BackupRunName,
     pub source_dir: PathBuf,
     pub remote_incremental_source_dir: Option<PathBuf>,
-    pub remote_dest_dir: Bak8Path,
+    pub remote_dest_dir: SourceTraitBackupPath,
 }
 
 impl JobTrait for SyncBackupJob {
@@ -87,7 +87,7 @@ pub struct SyncBackupJobOutput {
     pub source_dir: PathBuf,
     pub backup_run_name: BackupRunName,
     pub remote_incremental_source_dir: Option<PathBuf>,
-    pub remote_dest_dir: Bak8Path,
+    pub remote_dest_dir: SourceTraitBackupPath,
 }
 
 impl JobOutputTrait for SyncBackupJobOutput {}

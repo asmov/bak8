@@ -1,7 +1,7 @@
 //! # Users and Group Permissions
-//! - Core storage directories are owned by root:bak8usr if the group exists, otherwise current_user:current_user. Mode: 750
+//! - Core storage directories are owned by root:bakusr if the group exists, otherwise current_user:current_user. Mode: 750
 //! - Context directories (host, user, etc.):
-//!   - host: Owned by root:bak8usr if the group exists, otherwise current_user:current_user. Mode: 750
+//!   - host: Owned by root:bakusr if the group exists, otherwise current_user:current_user. Mode: 750
 //!   - user: Owned by user:user. Mode: 700
 
 use std::{borrow::Cow, sync::{Arc, Mutex, OnceLock}};
@@ -55,7 +55,7 @@ pub fn storage_admin_uid(config: &BackupConfig) -> Result<u32> {
     uid.ok_or_else(|| Error::AccountNotFound { account_type: Error::ACCOUNT_USER, account: config.storage_admin_user.clone()})
 }
 
-/// Returns the GID for the `bak8usr` group if it exists, otherwise None.
+/// Returns the GID for the `bakusr` group if it exists, otherwise None.
 pub fn backup_users_gid(config: &BackupConfig) -> Result<u32> {
     static GID: OnceLock<Option<u32>> = OnceLock::new();
     let gid = GID.get_or_init(|| {
@@ -94,7 +94,7 @@ pub fn expand_env(s: &str) -> Result<Cow<'_, str>> {
     match shellexpand::env(s) {
         Ok(s) => Ok(s),
         Err(_) if s == "$GROUP" => {
-            match PLATFORM.get_primary_user_group() {
+            match cross::PLATFORM.primary_user_group() {
                 Ok(group) => Ok(Cow::Owned(group)),
                 Err(_) => Err(Error::Generic(format!("Unable to determine primary user group for $GROUP")))
             }

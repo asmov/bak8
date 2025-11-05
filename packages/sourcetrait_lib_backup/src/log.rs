@@ -14,11 +14,11 @@ fn make_log_prefix(topic: &str, prefix: Option<&str>, color: colored::Color) -> 
     prefix.color(color).to_string()
 }
 
-pub fn bak8_error_log_prefix() -> String {
+pub fn sourcetrait_backup_error_log_prefix() -> String {
     make_log_prefix(consts::SOURCETRAIT_BACKUP, Some(" error:"), colored::Color::Red)
 }
 
-pub fn bak8_info_log_prefix() -> String {
+pub fn sourcetrait_backup_info_log_prefix() -> String {
     make_log_prefix(consts::SOURCETRAIT_BACKUP, None, colored::Color::Green)
 }
 
@@ -194,13 +194,13 @@ impl Log {
     }
 
     pub fn info(&self, msg: &str) {
-        let prefix = bak8_info_log_prefix();
+        let prefix = sourcetrait_backup_info_log_prefix();
         let log_msg = format!("{} {}", prefix, msg);
         self.write(&log_msg);
     }
 
     pub fn error(&self, msg: &str) {
-        let prefix = bak8_error_log_prefix();
+        let prefix = sourcetrait_backup_error_log_prefix();
         let log_msg = format!("{} {}", prefix, msg);
         self.write(&log_msg);
     }
@@ -230,7 +230,7 @@ impl Log {
                             println!("{}", msg.strip_tik());
                         }
 
-                        eprintln!("{} Unable to write to log file :: {}", bak8_error_log_prefix(), e);
+                        eprintln!("{} Unable to write to log file :: {}", sourcetrait_backup_error_log_prefix(), e);
                     }
                 },
                 Err(e) => {
@@ -238,7 +238,7 @@ impl Log {
                         println!("{}", msg.strip_tik());
                     }
 
-                    eprintln!("{} Unable to write to log file :: {}", bak8_error_log_prefix(), e.to_string().strip_tik());
+                    eprintln!("{} Unable to write to log file :: {}", sourcetrait_backup_error_log_prefix(), e.to_string().strip_tik());
                 }
             }
         }

@@ -1,10 +1,11 @@
-Bak8 OS Library
+SourceTrait Common Cross Platform
 ================================================================================
-*Platform specific library for Bak8*
+*Platform-specific paths, data, and system calls*
 
 License (AGPL3)
 --------------------------------------------------------------------------------
-SourceTrait Backup OS: Platform specific library for SourceTrait Backup  
+SourceTrait Common Cross Platform: Platform-specific paths, data, and system calls.  
+Developed by [SourceTrait](https://sourcetrait.com), a division of **Asmov LLC**  
 Copyright (C) 2025 [Asmov LLC](https://asmov.software)  
 
 This program is free software: you can redistribute it and/or modify

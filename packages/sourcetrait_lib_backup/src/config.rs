@@ -1,6 +1,6 @@
 use std::{borrow::Cow, fs, path::{Path, PathBuf}, str::FromStr};
 use validator::{Validate, ValidationError};
-use crate::{cli::*, paths::{self, Bak8Path}, Error, Result};
+use crate::{cli::*, paths::{self, SourceTraitBackupPath}, Error, Result};
 
 pub mod consts {
     pub const CFG_BACKUP_STORAGE_DIR: &'static str = "backup_storage_dir";
@@ -108,7 +108,7 @@ impl BackupConfig {
     }
 
     fn default_backup_users_group() -> String {
-        return "bak8usr".to_string()
+        return "bakusr".to_string()
     }
 
     pub fn read(filepath: &Path) -> Result<Self> {
@@ -158,8 +158,8 @@ impl BackupConfig {
             .expect("backup_storage_dir should be valid")
     }
 
-    pub fn bak8_storage_dir(&self) -> Bak8Path {
-        Bak8Path::StorageDir(self.backup_storage_dir_path())
+    pub fn sourcetrait_backup_storage_dir(&self) -> SourceTraitBackupPath {
+        SourceTraitBackupPath::StorageDir(self.backup_storage_dir_path())
     }
 
     pub fn remote<'cfg>(&'cfg self, name: &str) -> Result<&'cfg BackupConfigRemote> {

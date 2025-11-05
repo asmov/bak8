@@ -15,16 +15,16 @@ name = "bak"
 path = "src/main.rs"
 
 [dependencies]
-sourcetrait_lib_backup_os = { version="0", path = "../sourcetrait_lib_backup_os" }
-clap = { version = "4", features = ["derive"] }
-colored = "3"
-file_diff = "1"
-strum = { version = "0.27", features = ["derive"] }
-thiserror = "2"
+sourcetrait_crossplat.workspace = true
+clap.workspace = true
+colored.workspace = true
+file_diff.workspace = true
+strum.workspace = true
+thiserror.workspace = true
 
 [dev-dependencies]
-function_name = "0.3"
-file_diff = "1"
+function_name.workspace = true
+file_diff.workspace = true
 
 [package.metadata.generate-rpm]
 assets = [

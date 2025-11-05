@@ -27,14 +27,17 @@
 pub mod cli;
 pub mod os;
 
-use std::{fs, io::Write, path::{Path, PathBuf}};
+pub(crate) use std::{
+    fs, io::{self, Write}, path::{Path, PathBuf}
+};
 use clap::Parser;
 use file_diff;
 use thiserror;
 use colored::Colorize;
-pub(crate) use sourcetrait_lib_backup_os::{self as cross, *, prelude::*};
+pub(crate) use sourcetrait_crossplat::{self as cross, prelude::*};
 
 pub const SOURCETRAIT_BACKUP: &str = "sourcetrait_backup";
+pub const SOURCETRAIT_BACKUP_SUBDIR: &str = "sourcetrait/backup";
 const BAK: &str = "bak";
 const BAK_DOT: &str = "bak.";
 const BAK_0: &str = "bak.0";
@@ -124,6 +127,9 @@ pub enum Error {
 
     #[error("Invalid index for {src}: {index}")]
     Index { src: String, index: u8 },
+    
+    #[error("{source}")]
+    Cross { source: CrossError },
 
     #[error("{0}")]
     Generic(String)
@@ -209,7 +215,7 @@ fn confirm_wipe(source_file: &Path, dir: &Path, force: bool) -> bool {
 
 fn run_wipe(cli: &cli::Cli) -> Result<(), Error> {
     let dir = cli.dir();
-    let app_data_dir = cross::user_app_data_dir(true, SOURCETRAIT_BACKUP.into())
+    let app_data_dir = cross::PLATFORM.xdg_dir_for(XdgDir::HomeData, SOURCETRAIT_BACKUP_SUBDIR)
         .map_err(|e| Error::Generic(e.to_string()))?;
 
     if dir == app_data_dir {
@@ -250,7 +256,7 @@ fn run_wipe(cli: &cli::Cli) -> Result<(), Error> {
 
 fn run_list(cli: &cli::Cli) -> Result<(), Error> {
     let dir = cli.dir();
-    let app_data_dir = cross::user_app_data_dir(true, SOURCETRAIT_BACKUP.into())
+    let app_data_dir = cross::PLATFORM.init_xdg_dir_for(XdgDir::HomeData, SOURCETRAIT_BACKUP_SUBDIR)
         .map_err(|e| Error::Generic(e.to_string()))?;
 
     if dir != app_data_dir {
@@ -298,7 +304,7 @@ fn print_list_backups(source_file: &Path, dir: &Path) -> Result<(), Error> {
 fn run_diff(cli: &cli::Cli, index: u8) -> Result<(), Error> {
     let source_file = &cli.file;
     let mut dir = cli.dir();
-    let app_data_dir = cross::user_app_data_dir(true, SOURCETRAIT_BACKUP.into())
+    let app_data_dir = cross::PLATFORM.xdg_dir_for(XdgDir::HomeData, SOURCETRAIT_BACKUP_SUBDIR)
         .map_err(|e| Error::Generic(e.to_string()))?;
 
     if dir == app_data_dir {
@@ -382,7 +388,7 @@ fn list_bak_n_files(file: &Path, dir: &Path) -> Result<Vec<PathBuf>, Error> {
 /// Performs a copy
 fn run_backup(cli: &cli::Cli) -> Result<(), Error> {
     let dir = cli.dir();
-    let app_data_dir = cross::user_app_data_dir(true, SOURCETRAIT_BACKUP.into())
+    let app_data_dir = cross::PLATFORM.xdg_dir_for(XdgDir::HomeData, SOURCETRAIT_BACKUP_SUBDIR)
         .map_err(|e| Error::Generic(e.to_string()))?;
     let is_app_data_dir = dir == app_data_dir;
 
@@ -397,10 +403,10 @@ fn run_backup(cli: &cli::Cli) -> Result<(), Error> {
         None => return Ok(())
     };
 
-    match PLATFORM.copy_file(&cli.file, &bak_filepath) {
+    match cross::PLATFORM.copy_file_preserved(&cli.file, &bak_filepath) {
         Ok(_) => Ok(()),
-        Err(e) if e.kind() == std::io::ErrorKind::PermissionDenied && !is_app_data_dir => {
-            let app_data_dir = cross::user_app_data_dir(true, SOURCETRAIT_BACKUP.into())
+        Err(CrossError::Io {source,..}) if source.kind() == std::io::ErrorKind::PermissionDenied && !is_app_data_dir => {
+            let app_data_dir = cross::PLATFORM.xdg_dir_for(XdgDir::HomeData, SOURCETRAIT_BACKUP_SUBDIR)
                 .map_err(|e| Error::Generic(e.to_string()))?;
 
             let mirror_dir = mirror_dir(&app_data_dir, &cli.file, true)?;
@@ -410,8 +416,8 @@ fn run_backup(cli: &cli::Cli) -> Result<(), Error> {
                 None => return Ok(())
             };
 
-            PLATFORM.copy_file(&cli.file, &home_bak_filepath)
-                .map_err(|_| Error::copy(&cli.file, &home_bak_filepath, e))?;
+            cross::PLATFORM.copy_file_preserved(&cli.file, &home_bak_filepath)
+                .map_err(|_| Error::copy(&cli.file, &home_bak_filepath, source))?;
 
             if !cli.quiet {
                 eprintln!("{} copied to {}", "notice:".yellow(),
@@ -420,7 +426,8 @@ fn run_backup(cli: &cli::Cli) -> Result<(), Error> {
 
             Ok(())
         },
-        Err(e) => Err(Error::copy(&cli.file, &bak_filepath, e))
+        Err(CrossError::Io {source, ..}) => Err(Error::copy(&cli.file, &bak_filepath, source)),
+        Err(e) => Err(Error::copy(&cli.file, &bak_filepath, io::Error::new(io::ErrorKind::Other, e))),
     }
 }
 
@@ -598,5 +605,11 @@ mod tests {
         let src_file = "\\\\?\\C:\\Users\\dev\\tmp\\source.txt";
         let mirror_dir = determine_mirror_dir(Path::new(base_dir), Path::new(src_file)).unwrap();
         assert_eq!("\\\\?\\C:\\Users\\dev\\AppData\\Local\\sourcetrait\\bak\\C\\Users\\dev\\tmp", mirror_dir.to_str().unwrap());
+    }
+}
+
+impl From<CrossError> for Error {
+    fn from(source: CrossError) -> Self {
+        Self::Cross { source }
     }
 }

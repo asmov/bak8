@@ -17,7 +17,7 @@ backups based on configuration that the user provides.
 We also ship `bak`, which simply creates adhoc `.bak` copies of files,
 typically for use in basic system administration and development.
 
-Bak8
+SourceTrait Backup
 --------------------------------------------------------------------------------
 
 Under the hood, `sourcetrait backup` is essentially an automation tool for `rsync`.
