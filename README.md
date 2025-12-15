@@ -1,8 +1,8 @@
-MOVED TO: [SourceTrait CLI](https://github.com/sourcetrait/srctrait-backup)
+MOVED TO: [SourceTrait CLI](https://github.com/sourcetrait/sourcetrait_cli)
 ================================================================================
 
 This product is in the process of being refactored into the
-[SourceTrait CLI](https://github.com/sourcetrait/srctrait-backup) suite.
+[SourceTrait CLI](https://github.com/sourcetrait/sourcetrait_cli) suite.
 
 Please visit the new repository. This repository is deprecated.
 
