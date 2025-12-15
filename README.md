@@ -1,5 +1,15 @@
-SourceTrait Backup
+MOVED TO: [SourceTrait CLI](https://github.com/sourcetrait/srctrait-backup)
 ================================================================================
+
+This product is in the process of being refactored into the
+[SourceTrait CLI](https://github.com/sourcetrait/srctrait-backup) suite.
+
+Please visit the new repository. This repository is deprecated.
+
+Deprecated README was as follows ...
+
+SourceTrait Backup
+--------------------------------------------------------------------------------
 *Rotational backup system for workstation users*
 
 **SourceTrait Backup** is a rotational backup system focused on providing workstation users
