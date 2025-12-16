@@ -61,7 +61,7 @@ pub(crate) fn make_scheduled_backup_cli(_test: &testing::Test) -> lib_backup::cl
 
 pub(crate) fn make_config(test: &testing::Test, source_version: u8) -> lib_backup::config::BackupConfig {
     let username = lib_backup::sys::username();
-    let usergroup = lib_backup::sys::usergroup();
+    let usergroup = lib_backup::sys::groupname();
     lib_backup::config::BackupConfig {
         backup_storage_dir: test.temp_dir().join(STRG_SOURCETRAIT_BACKUP)
             .to_str().unwrap().to_string(),

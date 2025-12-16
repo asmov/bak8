@@ -4,89 +4,117 @@
 //!   - host: Owned by root:bakusr if the group exists, otherwise current_user:current_user. Mode: 750
 //!   - user: Owned by user:user. Mode: 700
 
-use std::{sync::{Arc, Mutex, OnceLock}};
-use uzers::{self, get_current_groupname, Groups, Users};
 use crate::{error::*, config::*};
 use crate::*;
 
 pub fn hostname() -> &'static str {
-    static HOSTNAME: OnceLock<String> = OnceLock::new();
-    &HOSTNAME.get_or_init(|| whoami::hostname().unwrap())
+    static HOSTNAME: LazyLock<Arc<String>> = LazyLock::new(|| {
+        cross::PLATFORM.net().hostname()
+            .expect("Failed to determine hostname")
+    });
+    
+    &HOSTNAME
 }
 
 pub fn username() -> &'static str {
-    static USERNAME: OnceLock<String> = OnceLock::new();
-    &USERNAME.get_or_init(|| {
-        let cache_lock = users_cache().lock().unwrap();
-        cache_lock.get_current_username().unwrap().to_string_lossy().to_string()
-    })
+    static USERNAME: LazyLock<String> = LazyLock::new(|| {
+        cross::PLATFORM.access().current_user()
+            .expect("Failed to determine current username")
+            .username()
+            .try_into_utf8()
+            .expect("Current username is not UTF8")
+    });
+    
+    &USERNAME
 }
 
-pub fn usergroup() -> &'static str {
-    static GROUPNAME: OnceLock<String> = OnceLock::new();
-    &GROUPNAME.get_or_init(|| {
-        let cache_lock = users_cache().lock().unwrap();
-        cache_lock.get_current_groupname().unwrap().to_string_lossy().to_string()
-    })
-}
-
-fn users_cache() -> &'static Arc<Mutex<uzers::UsersCache>> {
-    static CACHE: OnceLock<Arc<Mutex<uzers::UsersCache>>> = OnceLock::new();
-    &CACHE.get_or_init(|| Arc::new(Mutex::new(uzers::UsersCache::new())))
+pub fn groupname() -> cross::Capable<cross::PrimaryUserGroupsCapable, &'static str> {
+    static GROUPNAME: LazyLock<cross::Capable<cross::PrimaryUserGroupsCapable, String>> = LazyLock::new(|| {
+        let access = cross::PLATFORM.access();
+        let user = access.current_user()
+            .expect("Failed to determine current user");
+        access.user_primary_group(&user)
+            .expect("Failed to lookup current primary user")
+            .map_into(|g| g.groupname().try_into_utf8().expect("Current groupname is not UTF8"))
+    });
+    
+    GROUPNAME.as_deref()
 }
 
 pub const GROUP_BACKUP_USERNAME: &'static str = "bakusr";
 
 /// Returns UID 0 (root) if the `bakusr` group exists, otherwise the current user's UID.
-pub fn storage_admin_uid(config: &BackupConfig) -> Result<u32> {
-    static UID: OnceLock<Option<u32>> = OnceLock::new();
-    let uid = UID.get_or_init(|| {
+pub fn storage_admin_aid(config: &BackupConfig) -> Result<cross::AID<'static>> {
+    static AID: OnceLock<Option<cross::AccessID>> = OnceLock::new();
+    let aid = AID.get_or_init(|| {
         let Ok(user) = &config.get_storage_admin_user() else {
             return None;
         };
 
-        let cache_lock = users_cache().lock().unwrap();
-        match cache_lock.get_user_by_name(user as &str) {
-            Some(ref user) => Some(user.uid()),
+        let user = cross::PLATFORM.access()
+            .user(cross::AID::Name(TwoStr::new_utf8(user as &str)))
+            .expect("Unable to lookup user");
+        
+        match user {
+            Some(u) => Some(u.id()),
             None => None,
         }
     });
 
-    uid.ok_or_else(|| Error::AccountNotFound { account_type: Error::ACCOUNT_USER, account: config.storage_admin_user.clone()})
+    aid.as_ref().map(|id| id.as_ref())
+        .ok_or_else(|| Error::AccountNotFound { account_type: Error::ACCOUNT_USER, account: config.storage_admin_user.clone()})
 }
 
 /// Returns the GID for the `bakusr` group if it exists, otherwise None.
-pub fn backup_users_gid(config: &BackupConfig) -> Result<u32> {
-    static GID: OnceLock<Option<u32>> = OnceLock::new();
-    let gid = GID.get_or_init(|| {
+pub fn backup_users_id(config: &BackupConfig) -> Result<cross::AID<'static>> {
+    static AID: OnceLock<Option<cross::AccessID>> = OnceLock::new();
+    let aid = AID.get_or_init(|| {
         let Ok(group) = &config.get_backup_users_group() else {
             return None;
         };
 
-        let cache_lock = users_cache().lock().unwrap();
-        match cache_lock.get_group_by_name(group as &str) {
-            Some(ref group) => Some(group.gid()),
+        let group = cross::PLATFORM.access()
+            .group(cross::AID::Name(TwoStr::new_utf8(group as &str)))
+            .expect("Unable to lookup group");
+        
+        match group {
+            Some(g) => Some(g.id()),
             None => None,
         }
     });
 
-    gid.ok_or_else(|| Error::AccountNotFound { account_type: Error::ACCOUNT_GROUP, account: config.backup_users_group.clone()})
+    aid.as_ref().map(|aid| aid.as_ref())
+        .ok_or_else(|| Error::AccountNotFound { account_type: Error::ACCOUNT_GROUP, account: config.backup_users_group.clone()})
 }
 
-pub fn uid() -> u32 {
-    static UID: OnceLock<u32> = OnceLock::new();
-    *UID.get_or_init(|| {
-        let cache_lock = users_cache().lock().unwrap();
-        cache_lock.get_current_uid()
-    })
+pub fn user_aid() -> cross::AID<'static> {
+    static UID: OnceLock<cross::AccessID> = OnceLock::new();
+    let aid = UID.get_or_init(|| {
+        let user = cross::PLATFORM.access()
+            .current_user()
+            .expect("Failed to determine current user");
+        
+        user.id()
+    });
+    
+    aid.as_ref()
 }
 
-pub fn gid() -> u32 {
-    static GID: OnceLock<u32> = OnceLock::new();
-    *GID.get_or_init(|| {
-        let cache_lock = users_cache().lock().unwrap();
-        cache_lock.get_current_gid()
-    })
+pub fn group_aid() -> cross::Capable<cross::PrimaryUserGroupsCapable, cross::AID<'static>> {
+    static AID: OnceLock<cross::Capable<cross::PrimaryUserGroupsCapable, cross::AccessID>> = OnceLock::new();
+    let aid = AID.get_or_init(|| {
+        let user = cross::PLATFORM.access()
+            .current_user()
+            .expect("Failed to determine current user");
+        
+        let group = cross::PLATFORM.access()
+            .user_primary_group(&user)
+            .expect("Failed to lookup current primary group");
+        
+        group.map(cross::UserGroup::id)
+    });
+    
+    aid.as_ref().map(|aid| aid.as_ref())
 }
 
 /// We perform a custom lookup for $GROUP if it can't be expanded
@@ -97,10 +125,10 @@ pub fn expand_env(s: &str) -> Result<Cow<'_, str>> {
         |var| {
             match var {
                 "GROUP" => env::var("GROUP").map(Option::Some)
-                    .or_else(|e| {
-                        get_current_groupname()
-                            .ok_or(e)
-                            .map(|s| s.to_str().and_then(|s| Some(s.to_string())))
+                    .or_else(|_| {
+                        groupname()
+                            .ok()
+                            .map(|s| Some(s.to_string()))
                     }),
                 var => env::var(var).map(Option::Some).or_else(|_| Ok(None)),
             }

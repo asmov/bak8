@@ -204,8 +204,8 @@ impl SourceTraitBackupPath {
     pub fn setup(&self, config: &BackupConfig) -> Result<()> {
         match self {
             Self::StorageDir(path) => {
-                let uid = Some(storage_admin_uid(config)?);
-                let gid = Some(backup_users_gid(config)?);
+                let uid = Some(storage_admin_aid(config)?);
+                let gid = Some(backup_users_id(config)?);
 
                 if !path.exists() {
                     fs::create_dir_all(path)
@@ -243,7 +243,7 @@ impl SourceTraitBackupPath {
                 if !path.exists() {
                     fs::write(path, crate::consts::SOURCETRAIT_BACKUP_FS_VERSION.to_string())
                         .map_err(|e| Error::file_io(e, path, "Failed to create file system version file"))?;
-                    unix::fs::chown(&path, Some(storage_admin_uid(config)?), Some(backup_users_gid(config)?))
+                    unix::fs::chown(&path, Some(storage_admin_uid(config)?), Some(backup_users_id(config)?))
                         .map_err(|e| Error::file_io(e, path, "Failed to set ownerhsip on file system version file"))?;
                     fs::set_permissions(&path, unix::fs::PermissionsExt::from_mode(BACKUP_STORAGE_DIR_MODE))
                         .map_err(|e| Error::file_io(e, &path, "Failed to set permissions on file system version file"))?;
@@ -329,7 +329,7 @@ impl SourceTraitBackupPath {
                     if !host_subdir.exists() {
                         fs::create_dir(&host_subdir)
                             .map_err(|e| Error::file_io(e, &host_subdir, "Failed to create context subdirectory for host"))?;
-                        unix::fs::chown(&host_subdir, Some(storage_admin_uid(config)?), Some(backup_users_gid(config)?))
+                        unix::fs::chown(&host_subdir, Some(storage_admin_uid(config)?), Some(backup_users_id(config)?))
                             .map_err(|e| Error::file_io(e, &host_subdir, "Failed to set ownership for host context subdirectory"))?;
                         fs::set_permissions(&host_subdir, std::os::unix::fs::PermissionsExt::from_mode(BACKUP_STORAGE_DIR_MODE))
                             .map_err(|e| Error::file_io(e, &host_subdir, "Failed to set permissions on host context subdirectory"))?;
@@ -340,7 +340,7 @@ impl SourceTraitBackupPath {
                     if !user_subdir.exists() {
                         fs::create_dir(&user_subdir)
                             .map_err(|e| Error::file_io(e, &user_subdir, "Failed to create context subdirectory for user"))?;
-                        unix::fs::chown(&user_subdir, Some(uid()), Some(gid()))
+                        unix::fs::chown(&user_subdir, Some(user_aid()), Some(group_aid()))
                             .map_err(|e| Error::file_io(e, &user_subdir, "Failed to set ownership for user context subdirectory"))?;
                         fs::set_permissions(&user_subdir, std::os::unix::fs::PermissionsExt::from_mode(BACKUP_RUN_DIR_UNIX_MODE))
                             .map_err(|e| Error::file_io(e, &user_subdir, "Failed to set permissions on user context subdirectory"))?;
@@ -359,7 +359,7 @@ impl SourceTraitBackupPath {
                     if !year_subdir.exists() {
                         fs::create_dir(&year_subdir)
                             .map_err(|e| Error::file_io(e, &year_subdir, "Failed to create context subdirectory for year"))?;
-                        unix::fs::chown(&year_subdir, Some(uid()), Some(gid()))
+                        unix::fs::chown(&year_subdir, Some(user_aid()), Some(group_aid()))
                             .map_err(|e| Error::file_io(e, &year_subdir, "Failed to set ownership for year context subdirectory"))?;
                         fs::set_permissions(&year_subdir, std::os::unix::fs::PermissionsExt::from_mode(BACKUP_RUN_DIR_UNIX_MODE))
                             .map_err(|e| Error::file_io(e, &year_subdir, "Failed to set permissions on year context subdirectory"))?;
@@ -370,7 +370,7 @@ impl SourceTraitBackupPath {
                     if !month_subdir.exists() {
                         fs::create_dir(&month_subdir)
                             .map_err(|e| Error::file_io(e, &month_subdir, "Failed to create context subdirectory for month"))?;
-                        unix::fs::chown(&month_subdir, Some(uid()), Some(gid()))
+                        unix::fs::chown(&month_subdir, Some(user_aid()), Some(group_aid()))
                             .map_err(|e| Error::file_io(e, &month_subdir, "Failed to set ownership for month context subdirectory"))?;
                         fs::set_permissions(&month_subdir, std::os::unix::fs::PermissionsExt::from_mode(BACKUP_RUN_DIR_UNIX_MODE))
                             .map_err(|e| Error::file_io(e, &month_subdir, "Failed to set permissions on month context subdirectory"))?;
@@ -381,7 +381,7 @@ impl SourceTraitBackupPath {
                     if !day_subdir.exists() {
                         fs::create_dir(&day_subdir)
                             .map_err(|e| Error::file_io(e, &day_subdir, "Failed to create context subdirectory for day"))?;
-                        unix::fs::chown(&day_subdir, Some(uid()), Some(gid()))
+                        unix::fs::chown(&day_subdir, Some(user_aid()), Some(group_aid()))
                             .map_err(|e| Error::file_io(e, &day_subdir, "Failed to set ownership for day context subdirectory"))?;
                         fs::set_permissions(&day_subdir, std::os::unix::fs::PermissionsExt::from_mode(BACKUP_RUN_DIR_UNIX_MODE))
                             .map_err(|e| Error::file_io(e, &day_subdir, "Failed to set permissions on day context subdirectory"))?;

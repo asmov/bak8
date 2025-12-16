@@ -29,13 +29,16 @@ pub(crate) use std::{
     path::{PathBuf, Path},
     fs,
     io,
+    sync::{Arc, LazyLock, OnceLock},
+    str::FromStr,
 };
 
 pub mod consts {
+    use crate::*;
     pub const SOURCETRAIT_BACKUP: &'static str = "backup";
     pub const SOURCETRAIT_BACKUP_FS_VERSION: semver::Version = semver::Version::new(1, 0, 0);
 
-    lazy_static::lazy_static! {
-        pub static ref SOURCETRAIT_BACKUP_FS_VERSION_REQ: semver::VersionReq = semver::VersionReq::parse("^1").unwrap();
-    }
+    pub static SOURCETRAIT_BACKUP_FS_VERSION_REQ: LazyLock<semver::VersionReq> = LazyLock::new(|| {
+        semver::VersionReq::parse("^1").expect("^1")
+    });
 }
