@@ -39,7 +39,7 @@ impl JobTrait for ArchiveJob {
         }
 
         let checksum = sha256::try_digest(self.dest_filepath.as_path())
-            .map_err(|_| Error::Generic("Unable to checksum file".to_string()))?;
+            .map_err(|_| Error::Generic { msg: "Unable to checksum file".to_string() })?;
 
         let checksum_filepath = with_sha256_extension(self.dest_filepath.as_path());
         std::fs::write(

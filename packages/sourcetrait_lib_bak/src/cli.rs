@@ -46,7 +46,7 @@ impl Cli {
             Some(dir) => {
                 // handle passing Cli parameters manually
                 if dir.to_str().expect(E_STR) == "-" {
-                    cross::PLATFORM.init_xdg_dir_for(XdgDir::HomeData, SOURCETRAIT_BACKUP_SUBDIR)
+                    cross::PLATFORM.path().xdg_subdir(cross::XdgDir::HomeData, SOURCETRAIT_BACKUP_SUBDIR)
                         .expect("Failed to get user app data directory")
                 } else {
                     dir.clone()
@@ -81,8 +81,11 @@ fn validate_file(path: &str) -> Result<PathBuf, String> {
 }
 
 fn validate_dir(path: &str) -> Result<PathBuf, String> {
-    let data_dir = cross::PLATFORM.init_xdg_dir_for(XdgDir::HomeData, SOURCETRAIT_BACKUP_SUBDIR)
+    let data_dir = cross::PLATFORM.path().xdg_subdir(cross::XdgDir::HomeData, SOURCETRAIT_BACKUP_SUBDIR)
         .map_err(|e| e.to_string())?;
+    
+    fs::create_dir_all(&data_dir)
+        .map_err(|e| format!("Failed to create data directory: {}", e))?;
     
     let path = if path == "-" {
         data_dir

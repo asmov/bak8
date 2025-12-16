@@ -4,8 +4,8 @@
 //!   - host: Owned by root:bakusr if the group exists, otherwise current_user:current_user. Mode: 750
 //!   - user: Owned by user:user. Mode: 700
 
-use std::{borrow::Cow, sync::{Arc, Mutex, OnceLock}};
-use uzers::{self, Users, Groups};
+use std::{sync::{Arc, Mutex, OnceLock}};
+use uzers::{self, get_current_groupname, Groups, Users};
 use crate::{error::*, config::*};
 use crate::*;
 
@@ -23,8 +23,8 @@ pub fn username() -> &'static str {
 }
 
 pub fn usergroup() -> &'static str {
-    static USERNAME: OnceLock<String> = OnceLock::new();
-    &USERNAME.get_or_init(|| {
+    static GROUPNAME: OnceLock<String> = OnceLock::new();
+    &GROUPNAME.get_or_init(|| {
         let cache_lock = users_cache().lock().unwrap();
         cache_lock.get_current_groupname().unwrap().to_string_lossy().to_string()
     })
@@ -91,14 +91,24 @@ pub fn gid() -> u32 {
 
 /// We perform a custom lookup for $GROUP if it can't be expanded
 pub fn expand_env(s: &str) -> Result<Cow<'_, str>> {
-    match shellexpand::env(s) {
-        Ok(s) => Ok(s),
-        Err(_) if s == "$GROUP" => {
-            match cross::PLATFORM.primary_user_group() {
-                Ok(group) => Ok(Cow::Owned(group)),
-                Err(_) => Err(Error::Generic(format!("Unable to determine primary user group for $GROUP")))
+    let expanded = shellexpand::full_with_context(
+        s,
+        || cross::PLATFORM.path().home_dir().ok().and_then(|p| p.into_os_string().into_string().ok()),
+        |var| {
+            match var {
+                "GROUP" => env::var("GROUP").map(Option::Some)
+                    .or_else(|e| {
+                        get_current_groupname()
+                            .ok_or(e)
+                            .map(|s| s.to_str().and_then(|s| Some(s.to_string())))
+                    }),
+                var => env::var(var).map(Option::Some).or_else(|_| Ok(None)),
             }
-        },
-        Err(e) => Err(Error::Generic(format!("Unable to expand environment variables for: {s} :: {}", e)))
+        }
+    );
+    
+    match expanded {
+        Ok(s) => Ok(s),
+        Err(e) => Err(Error::Generic { msg: format!("Unable to expand environment variables for: {s} :: {}", e) })
     }
 }

@@ -45,11 +45,11 @@ impl SyncArchiveJob {
             .ok_or_else(|| Error::file_io_err(&self.remote_dest_filepath, "Failed to get parent directory"))?;
 
         let created = crate::cmd::ssh_run::ssh_make_dirs(&self.remote, &vec![dir])
-            .map_err(|e| Error::Generic(format!("Failed to create remote directories: {}", e)))?;
+            .map_err(|e| Error::msg(format!("Failed to create remote directories: {}", e)))?;
 
         match created {
             true => Ok(()),
-            false => Err(Error::Generic(format!("Failed to create remote directory: {}", dir.to_str().unwrap())))
+            false => Err(Error::msg(format!("Failed to create remote directory: {}", dir.to_str().unwrap())))
         }
     }
 }

@@ -15,12 +15,15 @@ name = "bak"
 path = "src/main.rs"
 
 [dependencies]
-sourcetrait_crossplat.workspace = true
 clap.workspace = true
 colored.workspace = true
 file_diff.workspace = true
+sourcetrait_crossplat.workspace = true
+snafu.workspace = true
 strum.workspace = true
-thiserror.workspace = true
+
+[target.'cfg(target_os = "macos")'.dependencies]
+libc = "0.2"
 
 [dev-dependencies]
 function_name.workspace = true

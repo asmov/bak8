@@ -61,22 +61,22 @@ impl SyncBackupJob {
         dirs.insert(0, self.remote_backup_storage_dir.clone());
 
         let is_valid = crate::cmd::ssh_run::ssh_dirs_exist(&self.remote, &dirs)
-            .map_err(|e| Error::Generic(format!("Failed to verify remote environment: {}", e)))?;
+            .map_err(|e| Error::msg(format!("Failed to verify remote environment: {}", e)))?;
 
         match is_valid {
             true => Ok(()),
-            false => Err(Error::Generic(format!("Some remote directories do not exist: {:?}", dirs)))
+            false => Err(Error::msg(format!("Some remote directories do not exist: {:?}", dirs)))
         }
     }
 
     fn prepare_remote_dirs(&self) -> Result<()> {
         let dirs = vec![self.remote_dest_dir.as_path()];
         let created = crate::cmd::ssh_run::ssh_make_dirs(&self.remote, &dirs)
-            .map_err(|e| Error::Generic(format!("Failed to create remote directories: {}", e)))?;
+            .map_err(|e| Error::msg(format!("Failed to create remote directories: {}", e)))?;
 
         match created {
             true => Ok(()),
-            false => Err(Error::Generic(format!("Failed to create remote directories: {:?}", dirs)))
+            false => Err(Error::msg(format!("Failed to create remote directories: {:?}", dirs)))
         }
     }
 }

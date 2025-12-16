@@ -3,7 +3,6 @@ resolver = "2"
 members = [
     "packages/sourcetrait_lib_bak",
     "packages/sourcetrait_lib_backup",
-    "packages/sourcetrait_crossplat"
 ]
 
 [workspace.dependencies]
@@ -22,7 +21,8 @@ semver = "1"
 serde = { version = "1", features = ["derive"] }
 sha256 = "1"
 shellexpand = "3"
-sourcetrait_crossplat = { version="1", path = "packages/sourcetrait_crossplat" }
+sourcetrait_crossplat = { path = "../../sourcetrait_common/crates/draft/sourcetrait_crossplat" }
+sourcetrait_twostr = { path = "../../sourcetrait_common/crates/sourcetrait_twostr" }
 sourcetrait_testing = "4"
 snafu = "0.8"
 strip-ansi-escapes = "0.2"

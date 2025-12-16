@@ -69,7 +69,7 @@ pub fn ssh_file_contents<P: AsRef<Path>>(remote: &Remote, file: P) -> Result<Opt
 /// Verifies that SHA256 checksum matches the file if: it exists and has a .sha256 file with it
 pub fn ssh_check_file_checksum<P: AsRef<Path>>(remote: &Remote, file: P) -> Result<()> {
     let parent_dir = file.as_ref().parent()
-        .ok_or_else(|| Error::Generic("File has no parent directory".to_string()))?;
+        .ok_or_else(|| Error::msg("File has no parent directory".to_string()))?;
 
     let output = process::Command::new(SSH_CMD)
         .arg(remote.addr())

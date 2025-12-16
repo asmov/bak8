@@ -22,6 +22,14 @@ pub use paths::SourceTraitBackupPath;
 pub use job::JobOutput;
 pub use sync::{Remote, Platform, SyncBackupJobOutput, SyncArchiveJobOutput};
 pub(crate) use sourcetrait_crossplat::{self as cross, prelude::*};
+pub(crate) use sourcetrait_twostr::*;
+pub(crate) use std::{
+    borrow::Cow,
+    env,
+    path::{PathBuf, Path},
+    fs,
+    io,
+};
 
 pub mod consts {
     pub const SOURCETRAIT_BACKUP: &'static str = "backup";

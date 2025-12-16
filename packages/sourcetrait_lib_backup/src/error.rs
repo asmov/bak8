@@ -1,56 +1,57 @@
-use std::path::Path;
-
+use crate::*;
 use crate::log::*;
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, snafu::Snafu)]
 pub enum Error {
-    #[error("Config file error: {path} :: {cause}")]
+    #[snafu(display("Config file error: {path} :: {cause}"))]
     ConfigFile { path: String, cause: String },
 
-    #[error("Config parsing error :: {cause}")]
+    #[snafu(display("Config parsing error :: {cause}"))]
     ConfigParse { cause: String },
 
-    #[error("Config file {} not found. Have you ran {} yet?", path.tik_path(), "srctrait backup config".tik_cmd())]
+    #[snafu(display("Config file {} not found. Have you ran {} yet?", path.tik_path(), "srctrait backup config".tik_cmd()))]
     DefaultConfigFileNotFound { path: String },
 
-    #[error("Config file {} not found.", path.tik_path())]
+    #[snafu(display("Config file {} not found.", path.tik_path()))]
     ConfigFileNotFound { path: String },
 
-    #[error("{message}: {path}{cause}", path = path.tik_path(),
-        cause = cause.as_ref().map_or("".to_string(), |c| format!(" :: {c}")))]
+    #[snafu(display("{message}: {path}{cause}", path = path.tik_path(),
+        cause = cause.as_ref().map_or("".to_string(), |c| format!(" :: {c}"))))]
     FileIO{ message: String, path: String, cause: Option<String> },
 
-    #[error("Config item {} not found for schema {}", name.tik_name(), schema.tik_name())]
+    #[snafu(display("Config item {} not found for schema {}", name.tik_name(), schema.tik_name()))]
     ConfigReferenceNotFound { schema: &'static str, name: String },
 
-    #[error("Directory {} not found. (config: {})", path.tik_path(), config_key.tik_name())]
+    #[snafu(display("Directory {} not found. (config: {})", path.tik_path(), config_key.tik_name()))]
     ConfiguredDirNotFound { path: String, config_key: String },
 
-    #[error("Subdirectory {} not found. (config: {})", path.tik_path(), config_key.tik_name())]
+    #[snafu(display("Subdirectory {} not found. (config: {})", path.tik_path(), config_key.tik_name()))]
     ConfiguredSubdirNotFound { path: String, config_key: String },
 
-    #[error("Failed to {}: {cause}", "rsync".tik_cmd())]
+    #[snafu(display("Failed to {}: {cause}", "rsync".tik_cmd()))]
     Rsync { cause: String },
 
-    #[error("Failed to {}: {cause}", "tar xz".tik_cmd())]
+    #[snafu(display("Failed to {}: {cause}", "tar xz".tik_cmd()))]
     TarXZ { cause: String },
 
-    #[error("Command {cmd} failed: {message}{cause}",
+    #[snafu(display("Command {cmd} failed: {message}{cause}",
         cmd = cmd.to_string().tik_cmd(),
-        cause = cause.as_ref().map_or("".to_string(), |c| format!(" :: {c}")))]
+        cause = cause.as_ref().map_or("".to_string(), |c| format!(" :: {c}"))))]
     Cmd { cmd: crate::cmd::Cmd, message: String, cause: Option<String> },
 
-    #[error("Remote command failed on host {remote_name}: {message}{cause}",
+    #[snafu(display("Remote command failed on host {remote_name}: {message}{cause}",
         remote_name = remote_name.tik_name(),
-        cause = cause.as_ref().map_or("".to_string(), |c| format!(" :: {c}")))]
+        cause = cause.as_ref().map_or("".to_string(), |c| format!(" :: {c}"))))]
     RemoteCmd { remote_name: String, message: String, cause: Option<String> },
 
-    #[error("{account_type} account {account} not found",
-        account = account.tik_name())]
+    #[snafu(display("{account_type} account {account} not found",
+        account = account.tik_name()))]
     AccountNotFound{ account_type: &'static str, account: String },
+    
+    Cross { source: cross::CrossError },
 
-    #[error("{0}")]
-    Generic(String)
+    #[snafu(display("{msg}"))]
+    Generic { msg: String }
 }
 
 impl Error {
@@ -140,6 +141,16 @@ impl Error {
             cause: String::from_utf8(output.stderr).unwrap()
         }
     }
+    
+    pub fn msg<S: std::fmt::Display>(msg: S) -> Self {
+        Self::Generic { msg: msg.to_string() }
+    }
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
+
+impl From<cross::CrossError> for Error {
+    fn from(source: cross::CrossError) -> Self {
+        Self::Cross { source }
+    }
+}

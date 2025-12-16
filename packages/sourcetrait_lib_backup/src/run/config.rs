@@ -65,12 +65,12 @@ fn confirm(question: &str) -> Result<bool> {
 fn run_config_edit(config_path: &Path) -> Result<bool> {
     eprintln!("Launching editor for config file: {}", config_path.tikn_path());
 
-    let output = cross::PLATFORM.run_best_editor(config_path, false)
-        .map_err(|e| Error::Generic(format!("Failed to run editor :: {e}")))?
-        .unwrap_output();
+    let output = cross::PLATFORM.cmd().open_with_editor(config_path, false)
+        .map_err(|e| Error::msg(format!("Failed to run editor :: {e}")))?
+        .take_output().expect("output");
 
     if !output.status.success() {
-        return Err(Error::Generic(format!("Failed to run editor :: {}", String::from_utf8(output.stderr).unwrap())));
+        return Err(Error::msg(format!("Failed to run editor :: {}", String::from_utf8(output.stderr).unwrap())));
     }
 
     println!("Verifying edit");
@@ -157,7 +157,7 @@ fn run_config_show(config_path: &Path) -> Result<bool> {
     println!("{}", header.cyan());
     println!("{:=<1$}", "".cyan(), header.chars().count());
     print!("{}", fs::read_to_string(config_path)
-        .map_err(|e| Error::Generic(format!("Unable to read from config file: {} :: {e}", config_path.tikn_path())))?);
+        .map_err(|e| Error::msg(format!("Unable to read from config file: {} :: {e}", config_path.tikn_path())))?);
 
     Ok(true)
 }

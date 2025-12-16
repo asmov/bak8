@@ -7,6 +7,9 @@ mod tests {
     use sourcetrait_lib_bak as bak;
     use clap::Parser;
     use std::path::PathBuf;
+    use std::{
+        fs,
+    };
 
     #[test]
     #[named]
@@ -214,8 +217,10 @@ mod tests {
             bak::cli::Cli::parse_from(["-f", "-q", "-n", "3", source_filepath.to_str().unwrap(), "-"])
         ).unwrap();
 
-        let app_data_dir = cross::PLATFORM.init_xdg_dir_for(XdgDir::HomeData, bak::SOURCETRAIT_BACKUP_SUBDIR)
+        let app_data_dir = cross::PLATFORM.path().xdg_subdir(cross::XdgDir::HomeData, bak::SOURCETRAIT_BACKUP_SUBDIR)
             .expect("Failed to get user app data directory");
+        fs::create_dir_all(&app_data_dir).expect("Failed to get user app data directory");
+
         let mirror_dir = bak::mirror_dir(&app_data_dir, &tmpdir.join("source.txt"), false).unwrap();
 
         assert_eq!(true, mirror_dir.is_dir());
