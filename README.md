@@ -1,6 +1,8 @@
 MOVED TO: [SourceTrait CLI](https://github.com/sourcetrait/sourcetrait_cli)
 ================================================================================
 
+**DEPRECATED**
+
 This product is in the process of being refactored into the
 [SourceTrait CLI](https://github.com/sourcetrait/sourcetrait_cli) suite.
 
