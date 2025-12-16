@@ -1,9 +1,7 @@
 mod plan;
 
-use std::{fmt::Display, fs, path::{Path, PathBuf}, str::FromStr};
-use chrono;
-use strum;
-use crate::{archive::*, cmd::rsync, config::*, error::*, job::*, log::*, paths::*, schedule::*, sync::*, sys::*};
+use crate::*;
+use crate::{archive::*, cmd::rsync, config::*, error::*, job::*, log::*, paths::*, schedule::*, sync::*};
 
 #[derive(Debug, Clone)]
 pub struct BackupRunName {
@@ -193,10 +191,13 @@ pub(crate) fn backup_job_due(
     cfg_backup: &BackupConfigBackup,
     config: &BackupConfig,
 ) -> Result<Option<JobQueueEntry>> {
+    let osnap = os_snapshot();
+    let hostname = osnap.hostname();
+    let username = osnap.current_username();
     let last_full_backup = find_last_backup(
         BackupType::Full,
-        hostname(),
-        username(),
+        &hostname,
+        &username,
         &cfg_backup.name,
         &config.backup_storage_dir_path());
 
@@ -218,8 +219,8 @@ pub(crate) fn backup_job_due(
 
     let last_incremental = find_last_backup(
         BackupType::Incremental,
-        hostname(),
-        username(),
+        &hostname,
+        &username,
         &cfg_backup.name,
         &config.backup_storage_dir_path());
 

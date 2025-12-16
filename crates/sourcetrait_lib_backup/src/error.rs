@@ -154,3 +154,9 @@ impl From<cross::CrossError> for Error {
         Self::Cross { source }
     }
 }
+
+impl From<twostr::TwoStrError> for Error {
+    fn from(_source: twostr::TwoStrError) -> Self {
+        Self::Cross { source: cross::CrossError::String  }
+    }
+}

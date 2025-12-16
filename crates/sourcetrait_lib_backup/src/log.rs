@@ -1,4 +1,4 @@
-use std::{fs, sync::OnceLock, io::Write};
+use crate::*;
 use chrono::Timelike;
 use colored::Colorize;
 use crate::{consts, config::*, schedule::*, paths, sys::*, cli::*};
@@ -177,9 +177,13 @@ impl Log {
             },
             None => false
         };
+        
+        let osnap = os_snapshot();
+        let hostname = osnap.hostname();
+        let username = osnap.current_username();
 
         if let Some(config) = config {
-            let filename = format!("{}__{}__{}.log", datetimestamp_now(), hostname(), username());
+            let filename = format!("{}__{}__{}.log", datetimestamp_now(), &hostname, &username);
             let path = config.backup_storage_dir_path()
                 .join(paths::consts::BACKUP_LOGS_DIRNAME)
                 .join(filename);

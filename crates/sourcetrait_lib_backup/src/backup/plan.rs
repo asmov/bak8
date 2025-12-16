@@ -1,3 +1,4 @@
+use crate::*;
 use super::*;
 use crate::paths::*;
 
@@ -9,15 +10,18 @@ impl BackupJob {
         cfg_backup: &BackupConfigBackup,
         config: &BackupConfig
     ) -> Result<JobQueueEntry> {
+        let osnap = os_snapshot();
+        let hostname = osnap.hostname();
+        let username = osnap.current_username();
         let sourcetrait_backup_storage_dir = config.sourcetrait_backup_storage_dir();
-        let run_name = BackupRunName::new(datetime_now(), hostname(), username(), &cfg_backup.name);
+        let run_name = BackupRunName::new(datetime_now(), &hostname, &username, &cfg_backup.name);
         let source_dir = cfg_backup.source_dir_path();
         let dest_dir = SourceTraitBackupPath::backup(&sourcetrait_backup_storage_dir, backup_type, &run_name);
         let incremental_source_dir = if backup_type == BackupType::Incremental {
             Some(find_last_backup(
                 BackupType::Full,
-                hostname(),
-                username(),
+                &hostname,
+                &username,
                 &cfg_backup.name,
                 &config.backup_storage_dir_path()
             ).unwrap())

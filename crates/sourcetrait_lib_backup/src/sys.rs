@@ -4,42 +4,8 @@
 //!   - host: Owned by root:bakusr if the group exists, otherwise current_user:current_user. Mode: 750
 //!   - user: Owned by user:user. Mode: 700
 
-use crate::{error::*, config::*};
 use crate::*;
-
-pub fn hostname() -> &'static str {
-    static HOSTNAME: LazyLock<Arc<String>> = LazyLock::new(|| {
-        cross::PLATFORM.net().hostname()
-            .expect("Failed to determine hostname")
-    });
-    
-    &HOSTNAME
-}
-
-pub fn username() -> &'static str {
-    static USERNAME: LazyLock<String> = LazyLock::new(|| {
-        cross::PLATFORM.access().current_user()
-            .expect("Failed to determine current username")
-            .username()
-            .try_into_utf8()
-            .expect("Current username is not UTF8")
-    });
-    
-    &USERNAME
-}
-
-pub fn groupname() -> cross::Capable<cross::PrimaryUserGroupsCapable, &'static str> {
-    static GROUPNAME: LazyLock<cross::Capable<cross::PrimaryUserGroupsCapable, String>> = LazyLock::new(|| {
-        let access = cross::PLATFORM.access();
-        let user = access.current_user()
-            .expect("Failed to determine current user");
-        access.user_primary_group(&user)
-            .expect("Failed to lookup current primary user")
-            .map_into(|g| g.groupname().try_into_utf8().expect("Current groupname is not UTF8"))
-    });
-    
-    GROUPNAME.as_deref()
-}
+use crate::{error::*, config::*};
 
 pub const GROUP_BACKUP_USERNAME: &'static str = "bakusr";
 
@@ -119,14 +85,20 @@ pub fn group_aid() -> cross::Capable<cross::PrimaryUserGroupsCapable, cross::AID
 
 /// We perform a custom lookup for $GROUP if it can't be expanded
 pub fn expand_env(s: &str) -> Result<Cow<'_, str>> {
+    const GROUP: &'static str = "GROUP";
+    let groupname = os_snapshot().current_user_primary_groupname();
+    
     let expanded = shellexpand::full_with_context(
         s,
-        || cross::PLATFORM.path().home_dir().ok().and_then(|p| p.into_os_string().into_string().ok()),
+        || {
+            cross::PLATFORM.path().home_dir().ok()
+                .and_then(|p| p.into_os_string().into_string().ok())
+        },
         |var| {
             match var {
-                "GROUP" => env::var("GROUP").map(Option::Some)
+                GROUP => env::var(GROUP).map(Option::Some)
                     .or_else(|_| {
-                        groupname()
+                        groupname
                             .ok()
                             .map(|s| Some(s.to_string()))
                     }),

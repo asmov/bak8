@@ -3,6 +3,7 @@ pub mod error;
 pub mod config;
 #[macro_use]
 pub mod log;
+pub(crate) mod os_snapshot;
 pub mod schedule;
 pub mod paths;
 pub mod cli;
@@ -14,6 +15,22 @@ pub mod archive;
 pub mod sync;
 pub mod sys;
 
+pub(crate) use crate::{
+    os_snapshot::*,
+};
+
+#[allow(unused_imports)]
+pub(crate) use std::{
+    borrow::Cow,
+    env,
+    fmt::{Display, Debug},
+    fs,
+    io::{self, Write},
+    path::{PathBuf, Path},
+    sync::{Arc, LazyLock, OnceLock},
+    str::FromStr,
+};
+
 pub use run::run_main as run;
 pub use error::{Error, Result};
 pub use archive::ArchiveJobOutput;
@@ -22,16 +39,7 @@ pub use paths::SourceTraitBackupPath;
 pub use job::JobOutput;
 pub use sync::{Remote, Platform, SyncBackupJobOutput, SyncArchiveJobOutput};
 pub(crate) use sourcetrait_crossplat::{self as cross, prelude::*};
-pub(crate) use sourcetrait_twostr::*;
-pub(crate) use std::{
-    borrow::Cow,
-    env,
-    path::{PathBuf, Path},
-    fs,
-    io,
-    sync::{Arc, LazyLock, OnceLock},
-    str::FromStr,
-};
+pub(crate) use sourcetrait_twostr::{self as twostr, *};
 
 pub mod consts {
     use crate::*;
