@@ -63,7 +63,7 @@ pub(crate) fn copy_file_preserved<P1: AsRef<Path>, P2: AsRef<Path>>(src: P1, dst
         fs::copy(&src, &dst)
     }
     #[cfg(target_os = "linux")] {
-        fs::copy(&src, &dst)
+        self::linux::copy_file_preserved(src, dst)
     }
     #[cfg(target_os = "macos")] {
         self::macos::copy_file_preserved(src, dst)
@@ -82,8 +82,10 @@ pub(crate) mod linux {
     };
     
     pub(super) fn copy_file_preserved<P1: AsRef<Path>, P2: AsRef<Path>>(src: P1, dst: P2) -> Result<(), io::Error> {
-        std::fs::copy(src, dst)?;
+        fs::copy(src, dst)?;
         
+        let src = src.as_ref();
+        let dst = dst.as_ref();
         let metadata = src.metadata()?;
         let src_c = CString::new(src.as_os_str().as_bytes())?;
         let dst_c = CString::new(dst.as_os_str().as_bytes())?;
