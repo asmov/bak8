@@ -3,38 +3,42 @@ pub mod config;
 pub mod log;
 pub mod summary;
 
-use std::process;
 use clap::Parser;
+use crate::*;
 use crate::{error::*, cli::*, config::*, log::*, run};
 
-pub fn run_main() -> process::ExitCode {
+pub fn init(config: Option<&BackupConfig>, cli: Option<&Cli>) -> Result<()> {
+    os_snapshot_init(OsSnapshotInit {})?;
+    Log::init(config, cli);
+    Ok(())
+}
+
+pub fn run_main() -> ExitCode {
     let cli = Cli::parse();
 
     if let Ok(config) = read_cli_config(&cli) {
-        Log::init(Some(&config), Some(&cli));
         match run_with_config(cli, config) {
-            Ok(true) => process::ExitCode::SUCCESS,
-            Ok(false) => process::ExitCode::FAILURE,
+            Ok(true) => ExitCode::SUCCESS,
+            Ok(false) => ExitCode::FAILURE,
             Err(e) => {
                 Log::get().error(&e.to_string());
-                process::ExitCode::FAILURE
+                ExitCode::FAILURE
             }
         }
     } else {
-        Log::init(None, Some(&cli));
         match run_with(cli) {
-            Ok(true) => process::ExitCode::SUCCESS,
-            Ok(false) => process::ExitCode::FAILURE,
+            Ok(true) => ExitCode::SUCCESS,
+            Ok(false) => ExitCode::FAILURE,
             Err(e) => {
                 Log::get().error(&e.to_string());
-                process::ExitCode::FAILURE
+                ExitCode::FAILURE
             }
         }
     }
 }
 
 pub fn run_with(cli: Cli) -> Result<bool> {
-
+    init(None, Some(&cli));
     match &cli.subcommand {
         Command::Backup(subcmd) => run::backup::run_backup(&cli, subcmd, None).map(|_| Ok(true))?,
         Command::Config(subcmd) => run::config::run_config(&cli, subcmd),
@@ -44,7 +48,7 @@ pub fn run_with(cli: Cli) -> Result<bool> {
 }
 
 pub fn run_with_config(cli: Cli, config: BackupConfig) -> Result<bool> {
-
+    init(Some(&config), Some(&cli));
     match &cli.subcommand {
         Command::Backup(subcmd) => run::backup::run_backup(&cli, subcmd, Some(&config)).map(|_| Ok(true))?,
         Command::Config(subcmd) => run::config::run_config(&cli, subcmd),

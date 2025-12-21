@@ -3,8 +3,8 @@
 use std::{fs, sync::OnceLock, path::PathBuf};
 use chrono::Timelike;
 use sourcetrait_testing::{self as testing, prelude::*};
+use sourcetrait_crossplat::{self as cross, prelude::*};
 use sourcetrait_lib_backup as lib_backup;
-use whoami;
 
 pub(crate) const STRG_SOURCETRAIT_BACKUP: &'static str = "strg/sourcetrait/backup";
 pub(crate) const TESTLIB: &'static str = "testlib";
@@ -35,7 +35,7 @@ pub(crate) trait TestlibModuleBuilder {
 
 impl<'func> TestlibModuleBuilder for testing::ModuleBuilder<'func> {
     fn testlib_module_defaults(self) -> Self {
-        lib_backup::log::Log::init(None, None);
+        lib_backup::run::init(None, None).unwrap();
         //std::env::set_var("BAK8_TEST", "1");//todo
         //call GROUP_TESTLIB instead: self.import_fixture_dir(testlib_namepath());
         self.base_temp_dir(env!("CARGO_TARGET_TMPDIR"))
@@ -60,8 +60,9 @@ pub(crate) fn make_scheduled_backup_cli(_test: &testing::Test) -> lib_backup::cl
 }
 
 pub(crate) fn make_config(test: &testing::Test, source_version: u8) -> lib_backup::config::BackupConfig {
-    let username = lib_backup::sys::username();
-    let usergroup = lib_backup::sys::groupname();
+    let user = cross::PLATFORM.access().current_user().unwrap();
+    let username = user.username().try_into_utf8().unwrap();
+    let usergroup = cross::PLATFORM.access().user_primary_group(&user).unwrap().expect("group").groupname().try_into_utf8().unwrap();
     lib_backup::config::BackupConfig {
         backup_storage_dir: test.temp_dir().join(STRG_SOURCETRAIT_BACKUP)
             .to_str().unwrap().to_string(),
@@ -114,6 +115,7 @@ pub(crate) fn sleep_if_top_of_hour() {
 
 
 pub(crate) fn setup_incremental_backup_test(test: &mut testing::Test) {
+    let hostname = cross::PLATFORM.net().hostname().unwrap();
     sleep_if_top_of_hour();
 
     let config = make_config(test, 1);
@@ -128,8 +130,8 @@ pub(crate) fn setup_incremental_backup_test(test: &mut testing::Test) {
 
     let earlier_run_name = lib_backup::backup::BackupRunName::new(
         chrono::Local::now().checked_sub_signed(chrono::Duration::minutes(1)).unwrap(),
-        lib_backup::sys::hostname(),
-        lib_backup::sys::username(),
+        &hostname,
+        &hostname,
         &config.backups[0].name,
     );
 
@@ -216,13 +218,13 @@ pub(crate) fn make_sync_config(
     config
 }
 
-pub(crate) fn expected_backup_ouput_dir(test: &testing::Test, backup_type: lib_backup::BackupType, output: &lib_backup::BackupJobOutput
-) -> PathBuf {
+pub(crate) fn expected_backup_ouput_dir(test: &testing::Test, backup_type: lib_backup::BackupType, output: &lib_backup::BackupJobOutput) -> PathBuf {
+    let hostname = cross::PLATFORM.net().hostname().unwrap();
     test.temp_dir()
         .join(STRG_SOURCETRAIT_BACKUP)
         .join(backup_type.subdir_name())
-        .join(whoami::hostname().unwrap())
-        .join(whoami::username().unwrap())
+        .join(&*hostname)
+        .join(&*hostname)
         .join(output.run_name.datetime.format("%Y").to_string())
         .join(output.run_name.datetime.format("%m").to_string())
         .join(output.run_name.datetime.format("%d").to_string())
@@ -236,12 +238,13 @@ pub(crate) fn assert_remote_backup_synced(
     remote_cfg: &lib_backup::config::BackupConfigRemote,
     output: &lib_backup::SyncBackupJobOutput
 ) {
+    let hostname = cross::PLATFORM.net().hostname().unwrap();
     assert_eq!(remote_cfg.name, output.remote.name);
 
     let expected_dir = PathBuf::from(&remote_cfg.backup_storage_dir)
         .join(backup_type.subdir_name())
-        .join(whoami::hostname().unwrap())
-        .join(whoami::username().unwrap())
+        .join(&*hostname)
+        .join(&*hostname)
         .join(output.backup_run_name.datetime.format("%Y").to_string())
         .join(output.backup_run_name.datetime.format("%m").to_string())
         .join(output.backup_run_name.datetime.format("%d").to_string())
@@ -266,12 +269,13 @@ pub(crate) fn assert_remote_archive_synced(
     archive_output: &lib_backup::ArchiveJobOutput,
     output: &lib_backup::SyncArchiveJobOutput
 ) {
+    let hostname = cross::PLATFORM.net().hostname().unwrap();
     assert_eq!(remote_cfg.name, output.remote.name);
 
     let expected_filepath = PathBuf::from(&remote_cfg.backup_storage_dir)
         .join(lib_backup::paths::consts::BACKUP_ARCHIVE_DIRNAME)
-        .join(whoami::hostname().unwrap())
-        .join(whoami::username().unwrap())
+        .join(&*hostname)
+        .join(&*hostname)
         .join(output.backup_run_name.datetime.format("%Y").to_string())
         .join(output.backup_run_name.datetime.format("%m").to_string())
         .join(output.backup_run_name.datetime.format("%d").to_string())
@@ -281,8 +285,8 @@ pub(crate) fn assert_remote_archive_synced(
 
     let expected_checksum_filepath = PathBuf::from(&remote_cfg.backup_storage_dir)
         .join(lib_backup::paths::consts::BACKUP_ARCHIVE_DIRNAME)
-        .join(whoami::hostname().unwrap())
-        .join(whoami::username().unwrap())
+        .join(&*hostname)
+        .join(&*hostname)
         .join(output.backup_run_name.datetime.format("%Y").to_string())
         .join(output.backup_run_name.datetime.format("%m").to_string())
         .join(output.backup_run_name.datetime.format("%d").to_string())

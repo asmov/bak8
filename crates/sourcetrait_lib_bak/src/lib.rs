@@ -27,10 +27,6 @@
 pub mod cli;
 pub mod os;
 
-pub(crate) use crate::{
-    os::copy_file_preserved,
-};
-
 pub(crate) use std::{
     fs, io::{self, Write}, path::{Path, PathBuf}
 };
@@ -146,7 +142,7 @@ impl Error {
         Self::Index { src: source.to_str().expect(E_STR).cyan().to_string(), index }
     }
 
-    pub fn copy(source: &Path, destination: &Path, cause: std::io::Error) -> Self {
+    pub fn copy(source: &Path, destination: &Path, cause: cross::CrossError) -> Self {
         Self::Copy {
             src: source.to_str().expect(E_STR).cyan().to_string(),
             dest: destination.to_str().expect(E_STR).cyan().to_string(),
@@ -409,9 +405,9 @@ fn run_backup(cli: &cli::Cli) -> Result<(), Error> {
         None => return Ok(())
     };
 
-    match copy_file_preserved(&cli.file, &bak_filepath) {
+    match cross::PLATFORM.fs().copy_preserved(&cli.file, &bak_filepath) {
         Ok(_) => Ok(()),
-        Err(e @ io::Error{..}) if e.kind() == io::ErrorKind::PermissionDenied && !is_app_data_dir => {
+        Err(e) if e.source_io_permission_denied() && !is_app_data_dir => {
             let app_data_dir = cross::PLATFORM.path().xdg_subdir(cross::XdgDir::HomeData, SOURCETRAIT_BACKUP_SUBDIR)
                 .map_err(|e| Error::msg(e.to_string()))?;
 
@@ -422,7 +418,7 @@ fn run_backup(cli: &cli::Cli) -> Result<(), Error> {
                 None => return Ok(())
             };
 
-            copy_file_preserved(&cli.file, &home_bak_filepath)
+            cross::PLATFORM.fs().copy_preserved(&cli.file, &home_bak_filepath)
                 .map_err(|_| Error::copy(&cli.file, &home_bak_filepath, e))?;
 
             if !cli.quiet {
@@ -432,7 +428,7 @@ fn run_backup(cli: &cli::Cli) -> Result<(), Error> {
 
             Ok(())
         },
-        Err(e) => Err(Error::copy(&cli.file, &bak_filepath, io::Error::new(io::ErrorKind::Other, e))),
+        Err(e) => Err(Error::copy(&cli.file, &bak_filepath, e)),
     }
 }
 

@@ -29,6 +29,7 @@ pub(crate) use std::{
     path::{PathBuf, Path},
     sync::{Arc, LazyLock, OnceLock},
     str::FromStr,
+    process::ExitCode,
 };
 
 pub use run::run_main as run;
@@ -38,6 +39,7 @@ pub use backup::{BackupType, BackupRunName, BackupJobOutput};
 pub use paths::SourceTraitBackupPath;
 pub use job::JobOutput;
 pub use sync::{Remote, Platform, SyncBackupJobOutput, SyncArchiveJobOutput};
+pub(crate) use chrono::{DateTime, Local};
 pub(crate) use sourcetrait_crossplat::{self as cross, prelude::*};
 pub(crate) use sourcetrait_twostr::{self as twostr, *};
 

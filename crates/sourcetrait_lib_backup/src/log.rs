@@ -1,7 +1,7 @@
 use crate::*;
 use chrono::Timelike;
 use colored::Colorize;
-use crate::{consts, config::*, schedule::*, paths, sys::*, cli::*};
+use crate::{consts, config::*, schedule::*, paths, cli::*};
 
 fn make_log_prefix(topic: &str, prefix: Option<&str>, color: colored::Color) -> String {
     let now = chrono::Local::now();
