@@ -117,8 +117,8 @@ impl SourceTraitBackupPath {
             storage_dir: storage_dir.as_ref().to_path_buf(),
             path: storage_dir.as_ref()
                 .join(consts::BACKUP_FULL_DIRNAME)
-                .join(&run_name.hostname)
                 .join(&run_name.username)
+                .join(&run_name.hostname)
                 .join(run_name.datetime.format("%Y").to_string())
                 .join(run_name.datetime.format("%m").to_string())
                 .join(run_name.datetime.format("%d").to_string())
@@ -132,8 +132,8 @@ impl SourceTraitBackupPath {
             storage_dir: storage_dir.as_ref().to_path_buf(),
             path: storage_dir.as_ref()
                 .join(consts::BACKUP_INCREMENTAL_DIRNAME)
-                .join(&run_name.hostname)
                 .join(&run_name.username)
+                .join(&run_name.hostname)
                 .join(run_name.datetime.format("%Y").to_string())
                 .join(run_name.datetime.format("%m").to_string())
                 .join(run_name.datetime.format("%d").to_string())
@@ -152,8 +152,8 @@ impl SourceTraitBackupPath {
     pub fn backup_dir<P: AsRef<Path>>(storage_dir: P, path_parts: BackupPathParts) -> Self {
         let mut path = storage_dir.as_ref()
             .join(&path_parts.backup_type.subdir_name())
-            .join(&path_parts.hostname)
-            .join(&path_parts.username);
+            .join(&path_parts.username)
+            .join(&path_parts.hostname);
 
         if let Some(datetime) = path_parts.datetime {
             path.push(datetime.format("%Y").to_string());
@@ -173,8 +173,8 @@ impl SourceTraitBackupPath {
         Self::Archive {
             storage_dir: storage_dir.as_ref().to_path_buf(),
             path: storage_dir.as_ref().join(consts::BACKUP_ARCHIVE_DIRNAME)
-                .join(&run_name.hostname)
                 .join(&run_name.username)
+                .join(&run_name.hostname)
                 .join(run_name.datetime.format("%Y").to_string())
                 .join(run_name.datetime.format("%m").to_string())
                 .join(run_name.datetime.format("%d").to_string())
@@ -220,9 +220,12 @@ impl SourceTraitBackupPath {
     /// This includes creating directories and setting permissions.
     /// Currently, this only applies to [Bak8Path::StorageDir].
     pub fn setup(&self, config: &BackupConfig) -> Result<()> {
+        let current_user = os_snapshot().current_user();
+        let current_user_group_aid_capable = os_snapshot().current_user_primary_group_aid();
         let admin_uaid = storage_admin_aid(config)?;
         let backup_users_gaid = backup_users_id(config)?;
         let backup_users_gaid_capable = cross::Capable::Capable(backup_users_gaid);
+        let backup_users_group = backup_users_group(config)?;
         
         match self {
             Self::StorageDir(path) => {
@@ -237,12 +240,29 @@ impl SourceTraitBackupPath {
                 let backup_storage_dir = path.canonicalize()
                     .map_err(|e| Error::file_io(e, path, "Backup storage directory is not accessible"))?;
 
+                let all_backup_users = cross::PLATFORM.access().group_users(&backup_users_group)?;
                 for subdir in backup_storage_subdirs(&backup_storage_dir) {
-                    fs::create_dir(&subdir)
-                        .map_err(|e| Error::file_io(e, &subdir, "Failed to create backup storage subdirectory"))?;
+                    if !subdir.exists() {
+                        fs::create_dir(&subdir)
+                            .map_err(|e| Error::file_io(e, &subdir, "Failed to create backup storage subdirectory"))?;
+                    }
+                    
                     cross::PLATFORM.fs()
                         .own_capable(&subdir, admin_uaid, &backup_users_gaid_capable, BACKUP_STORAGE_DIR_PERMISSIONS)
                         .map_err(|e| Error::file_io(e, &subdir, "Failed to set permissions on backup storage subdirectory"))?;
+                    
+                    for backup_user in &all_backup_users {
+                        let user_subdir = subdir.join(backup_user.username().as_ffi());
+                        if !user_subdir.exists() {
+                            fs::create_dir(&user_subdir)
+                                .map_err(|e| Error::file_io(e, &user_subdir, "Failed to create backup storage subdirectory"))?;
+                        }
+                        
+                        let backup_user_group_capable = cross::PLATFORM.access().user_primary_group(&backup_user)?;
+                        cross::PLATFORM.fs()
+                            .own_capable(&user_subdir, backup_user, &backup_user_group_capable, BACKUP_STORAGE_DIR_PERMISSIONS)
+                            .map_err(|e| Error::file_io(e, &user_subdir, "Failed to set permissions on user backup storage subdirectory"))?;
+                    }
                 }
 
                 Self::fs_version(&backup_storage_dir).setup(config)?;
@@ -333,9 +353,9 @@ impl SourceTraitBackupPath {
         let osnap = os_snapshot();
         let uaid = osnap.current_user_aid();
         let gaid_capable = osnap.current_user_primary_group_aid();
-        let admin_uaid = storage_admin_aid(config)?;
-        let backup_users_gaid = backup_users_id(config)?;
-        let backup_users_gaid_capable = cross::Capable::Capable(backup_users_gaid);
+        //let admin_uaid = storage_admin_aid(config)?;
+        //let backup_users_gaid = backup_users_id(config)?;
+        //let backup_users_gaid_capable = cross::Capable::Capable(backup_users_gaid);
         
         match self {
             Self::BackupDir { storage_dir, path, .. }
@@ -347,19 +367,11 @@ impl SourceTraitBackupPath {
 
                 if !path.exists() {
                     let subdir = self.storage_subdir().expect("subdir");
-
-                    // create context subdir: host
-                    let host_subdir = subdir.join(osnap.hostname().as_str());
-                    if !host_subdir.exists() {
-                        fs::create_dir(&host_subdir)
-                            .map_err(|e| Error::file_io(e, &host_subdir, "Failed to create context subdirectory for host"))?;
-                        cross::PLATFORM.fs()
-                            .own_capable(&host_subdir, &admin_uaid, &backup_users_gaid_capable, BACKUP_STORAGE_DIR_PERMISSIONS)
-                            .map_err(|e| Error::file_io(e, &host_subdir, "Failed to set ownership for host context subdirectory"))?;
-                    }
+                    let mut last_dir = &subdir;
 
                     // create context subdir: user
-                    let user_subdir = host_subdir.join(osnap.current_username().as_str());
+                    let user_subdir = last_dir.join(osnap.current_username().as_str());
+                    last_dir = &user_subdir;
                     if !user_subdir.exists() {
                         fs::create_dir(&user_subdir)
                             .map_err(|e| Error::file_io(e, &user_subdir, "Failed to create context subdirectory for user"))?;
@@ -369,6 +381,17 @@ impl SourceTraitBackupPath {
                             .map_err(|e| Error::file_io(e, &user_subdir, "Failed to set ownership for user context subdirectory"))?;
                         //fs::set_permissions(&user_subdir, std::os::unix::fs::PermissionsExt::from_mode(BACKUP_RUN_DIR_UNIX_MODE))
                         //    .map_err(|e| Error::file_io(e, &user_subdir, "Failed to set permissions on user context subdirectory"))?;
+                    }
+                    
+                    // create context subdir: host
+                    let host_subdir = last_dir.join(osnap.hostname().as_str());
+                    last_dir = &host_subdir;
+                    if !host_subdir.exists() {
+                        fs::create_dir(&host_subdir)
+                            .map_err(|e| Error::file_io(e, &host_subdir, "Failed to create context subdirectory for host"))?;
+                        cross::PLATFORM.fs()
+                            .own_capable(&host_subdir, &uaid, &gaid_capable, BACKUP_STORAGE_DIR_PERMISSIONS)
+                            .map_err(|e| Error::file_io(e, &host_subdir, "Failed to set ownership for host context subdirectory"))?;
                     }
 
                     let datetime = match self {
@@ -380,7 +403,8 @@ impl SourceTraitBackupPath {
                     };
 
                     // create context subdir: year
-                    let year_subdir = user_subdir.join(datetime.format("%Y").to_string());
+                    let year_subdir = last_dir.join(datetime.format("%Y").to_string());
+                    last_dir = &year_subdir;
                     if !year_subdir.exists() {
                         fs::create_dir(&year_subdir)
                             .map_err(|e| Error::file_io(e, &year_subdir, "Failed to create context subdirectory for year"))?;
@@ -393,7 +417,8 @@ impl SourceTraitBackupPath {
                     }
 
                     // create context subdir: month
-                    let month_subdir = year_subdir.join(datetime.format("%m").to_string());
+                    let month_subdir = last_dir.join(datetime.format("%m").to_string());
+                    last_dir = &month_subdir;
                     if !month_subdir.exists() {
                         fs::create_dir(&month_subdir)
                             .map_err(|e| Error::file_io(e, &month_subdir, "Failed to create context subdirectory for month"))?;
@@ -406,7 +431,8 @@ impl SourceTraitBackupPath {
                     }
 
                     // create context subdir: day
-                    let day_subdir = month_subdir.join(datetime.format("%d").to_string());
+                    let day_subdir = last_dir.join(datetime.format("%d").to_string());
+                    last_dir = &day_subdir;
                     if !day_subdir.exists() {
                         fs::create_dir(&day_subdir)
                             .map_err(|e| Error::file_io(e, &day_subdir, "Failed to create context subdirectory for day"))?;

@@ -53,6 +53,21 @@ pub fn backup_users_id(config: &BackupConfig) -> Result<cross::AccessIdRef<'stat
         .ok_or_else(|| Error::AccountNotFound { account_type: Error::ACCOUNT_GROUP, account: config.backup_users_group.clone()})
 }
 
+/// Returns the GID for the `bakusr` group if it exists, otherwise None.
+pub fn backup_users_group(config: &BackupConfig) -> Result<&'static cross::UserGroup> {
+    static AID: OnceLock<cross::UserGroup> = OnceLock::new();
+    let group = AID.get_or_init(|| {
+        let group_name = &config.get_backup_users_group().expect("Unable to lookup backup users group");
+
+        cross::PLATFORM.access()
+            .group(cross::AccessKeyRef::Name(TwoStr::new_utf8(group_name as &str)))
+            .expect("Unable to lookup backup users group")
+            .expect("Unable to lookup backup users group")
+    });
+
+    Ok(group)
+}
+
 pub fn user_aid() -> cross::AccessIdRef<'static> {
     static UID: OnceLock<cross::AccessId> = OnceLock::new();
     let aid = UID.get_or_init(|| {

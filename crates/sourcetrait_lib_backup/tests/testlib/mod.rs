@@ -116,6 +116,7 @@ pub(crate) fn sleep_if_top_of_hour() {
 
 pub(crate) fn setup_incremental_backup_test(test: &mut testing::Test) {
     let hostname = cross::PLATFORM.net().hostname().unwrap();
+    let username = cross::PLATFORM.access().current_user().unwrap().username().try_into_utf8().unwrap();
     sleep_if_top_of_hour();
 
     let config = make_config(test, 1);
@@ -131,7 +132,7 @@ pub(crate) fn setup_incremental_backup_test(test: &mut testing::Test) {
     let earlier_run_name = lib_backup::backup::BackupRunName::new(
         chrono::Local::now().checked_sub_signed(chrono::Duration::minutes(1)).unwrap(),
         &hostname,
-        &hostname,
+        &username,
         &config.backups[0].name,
     );
 
@@ -220,10 +221,11 @@ pub(crate) fn make_sync_config(
 
 pub(crate) fn expected_backup_ouput_dir(test: &testing::Test, backup_type: lib_backup::BackupType, output: &lib_backup::BackupJobOutput) -> PathBuf {
     let hostname = cross::PLATFORM.net().hostname().unwrap();
+    let username = cross::PLATFORM.access().current_user().unwrap().username().try_into_utf8().unwrap();
     test.temp_dir()
         .join(STRG_SOURCETRAIT_BACKUP)
         .join(backup_type.subdir_name())
-        .join(&*hostname)
+        .join(&*username)
         .join(&*hostname)
         .join(output.run_name.datetime.format("%Y").to_string())
         .join(output.run_name.datetime.format("%m").to_string())
@@ -239,11 +241,12 @@ pub(crate) fn assert_remote_backup_synced(
     output: &lib_backup::SyncBackupJobOutput
 ) {
     let hostname = cross::PLATFORM.net().hostname().unwrap();
+    let username = cross::PLATFORM.access().current_user().unwrap().username().try_into_utf8().unwrap();
     assert_eq!(remote_cfg.name, output.remote.name);
 
     let expected_dir = PathBuf::from(&remote_cfg.backup_storage_dir)
         .join(backup_type.subdir_name())
-        .join(&*hostname)
+        .join(&*username)
         .join(&*hostname)
         .join(output.backup_run_name.datetime.format("%Y").to_string())
         .join(output.backup_run_name.datetime.format("%m").to_string())
@@ -270,11 +273,12 @@ pub(crate) fn assert_remote_archive_synced(
     output: &lib_backup::SyncArchiveJobOutput
 ) {
     let hostname = cross::PLATFORM.net().hostname().unwrap();
+    let username = cross::PLATFORM.access().current_user().unwrap().username().try_into_utf8().unwrap();
     assert_eq!(remote_cfg.name, output.remote.name);
 
     let expected_filepath = PathBuf::from(&remote_cfg.backup_storage_dir)
         .join(lib_backup::paths::consts::BACKUP_ARCHIVE_DIRNAME)
-        .join(&*hostname)
+        .join(&*username)
         .join(&*hostname)
         .join(output.backup_run_name.datetime.format("%Y").to_string())
         .join(output.backup_run_name.datetime.format("%m").to_string())
@@ -286,7 +290,7 @@ pub(crate) fn assert_remote_archive_synced(
     let expected_checksum_filepath = PathBuf::from(&remote_cfg.backup_storage_dir)
         .join(lib_backup::paths::consts::BACKUP_ARCHIVE_DIRNAME)
         .join(&*hostname)
-        .join(&*hostname)
+        .join(&*username)
         .join(output.backup_run_name.datetime.format("%Y").to_string())
         .join(output.backup_run_name.datetime.format("%m").to_string())
         .join(output.backup_run_name.datetime.format("%d").to_string())

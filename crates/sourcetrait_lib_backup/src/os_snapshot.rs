@@ -47,7 +47,7 @@ impl OsSnapshot {
 pub(crate) struct OsSnapshotInit {
 }
 
-pub const E_INIT: &'static str = "os snapshot initialized";
+pub const E_INIT: &'static str = "os snapshot not initialized";
 
 #[inline]
 pub(crate) fn os_snapshot() -> Arc<OsSnapshot> {

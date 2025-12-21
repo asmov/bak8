@@ -74,6 +74,7 @@ mod tests {
 
     fn setup_backup_dir(test: &mut testing::Test) {
         let config = testlib::make_config(&test, 1);
+        sourcetrait_lib_backup::run::init(Some(&config), None).unwrap();
         SourceTraitBackupPath::StorageDir(test.temp_dir().join(testlib::STRG_SOURCETRAIT_BACKUP)).setup(&config).unwrap();
     }
 
