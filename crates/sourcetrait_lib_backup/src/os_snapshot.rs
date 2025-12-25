@@ -44,8 +44,7 @@ impl OsSnapshot {
 }
 
 #[derive(Debug)]
-pub(crate) struct OsSnapshotInit {
-}
+pub(crate) struct OsSnapshotInit {}
 
 pub const E_INIT: &'static str = "os snapshot not initialized";
 

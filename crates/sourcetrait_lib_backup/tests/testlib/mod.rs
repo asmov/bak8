@@ -36,7 +36,7 @@ pub(crate) trait TestlibModuleBuilder {
 impl<'func> TestlibModuleBuilder for testing::ModuleBuilder<'func> {
     fn testlib_module_defaults(self) -> Self {
         lib_backup::run::init(None, None).unwrap();
-        //std::env::set_var("BAK8_TEST", "1");//todo
+        //std::env::set_var("BAK_TEST", "1");//todo
         //call GROUP_TESTLIB instead: self.import_fixture_dir(testlib_namepath());
         self.base_temp_dir(env!("CARGO_TARGET_TMPDIR"))
     }
@@ -62,7 +62,9 @@ pub(crate) fn make_scheduled_backup_cli(_test: &testing::Test) -> lib_backup::cl
 pub(crate) fn make_config(test: &testing::Test, source_version: u8) -> lib_backup::config::BackupConfig {
     let user = cross::PLATFORM.access().current_user().unwrap();
     let username = user.username().try_into_utf8().unwrap();
-    let usergroup = cross::PLATFORM.access().user_primary_group(&user).unwrap().expect("group").groupname().try_into_utf8().unwrap();
+    let usergroup = cross::PLATFORM.access()
+        .user_primary_group(&user).unwrap().expect("group")
+        .groupname().try_into_utf8().unwrap();
     lib_backup::config::BackupConfig {
         backup_storage_dir: test.temp_dir().join(STRG_SOURCETRAIT_BACKUP)
             .to_str().unwrap().to_string(),
