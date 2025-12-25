@@ -1,13 +1,10 @@
-use std::path::PathBuf;
-use clap::{Parser, Subcommand};
-use crate::{PathExt, E_STR};
 use crate::*;
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
 pub struct Cli {
     #[command(subcommand)]
-    pub subcommand: Option<Command>,
+    pub subcommand: Option<CliCommand>,
 
     #[arg(value_parser = validate_file)]
     pub file: PathBuf,
@@ -28,7 +25,7 @@ pub struct Cli {
 
 
 #[derive(Subcommand, Debug)]
-pub enum Command {
+pub enum CliCommand {
     #[command(name = "ls", about = "List all backups of FILE in DIR")]
     List,
     #[command(name = "rm", about = "Deletes all backups of FILE in DIR")]
