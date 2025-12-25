@@ -1,5 +1,4 @@
-use std::path::Path;
-use crate::sync::*;
+use crate::*;
 
 const RSYNC_CMD: &'static str = "rsync";
 const RSYNC_FLAG_ARCHIVE: &'static str = "--archive";

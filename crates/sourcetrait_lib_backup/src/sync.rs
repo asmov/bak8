@@ -6,7 +6,7 @@ pub struct Remote {
     pub name: String,
     pub host: String,
     pub user: Option<String>,
-    pub platform: Platform
+    pub platform: SyncPlatform
 }
 
 impl Remote {
@@ -43,7 +43,7 @@ impl From<&crate::config::BackupConfigRemote> for Remote {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "snake_case")]
-pub enum Platform {
+pub enum SyncPlatform {
     #[default]
     GNU
 }

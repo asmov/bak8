@@ -35,44 +35,43 @@ pub(crate) trait TestlibModuleBuilder {
 
 impl<'func> TestlibModuleBuilder for testing::ModuleBuilder<'func> {
     fn testlib_module_defaults(self) -> Self {
-        lib_backup::run::init_os_snapshot().unwrap();
-        lib_backup::run::init_log(None, None).unwrap();
+        lib_backup::init(None, None).unwrap();
         //std::env::set_var("BAK_TEST", "1");//todo
         //call GROUP_TESTLIB instead: self.import_fixture_dir(testlib_namepath());
         self.base_temp_dir(env!("CARGO_TARGET_TMPDIR"))
     }
 }
 
-pub(crate) fn sourcetrait_backup_backup(cli: &lib_backup::cli::Cli, config: &lib_backup::config::BackupConfig) -> lib_backup::job::JobResults {
-    lib_backup::run::backup::run_backup(&cli, &lib_backup::cli::BackupCommand::Scheduled, Some(config))
+pub(crate) fn sourcetrait_backup_backup(cli: &lib_backup::Cli, config: &lib_backup::BackupConfig) -> lib_backup::JobResults {
+    lib_backup::run_backup(&cli, &lib_backup::CliBackupCommand::Scheduled, Some(config))
 }
 
-pub(crate) fn setup_backup_dir(test: &testing::Test, config: &lib_backup::config::BackupConfig) {
+pub(crate) fn setup_backup_dir(test: &testing::Test, config: &lib_backup::BackupConfig) {
     lib_backup::SourceTraitBackupPath::StorageDir(test.temp_dir().join(STRG_SOURCETRAIT_BACKUP)).setup(config).unwrap();
 }
 
-pub(crate) fn make_scheduled_backup_cli(_test: &testing::Test) -> lib_backup::cli::Cli {
-    lib_backup::cli::Cli {
+pub(crate) fn make_scheduled_backup_cli(_test: &testing::Test) -> lib_backup::Cli {
+    lib_backup::Cli {
         config_file: None,
         force: false,
         quiet: false,
-        subcommand: lib_backup::cli::Command::Backup(lib_backup::cli::BackupCommand::Scheduled),
+        subcommand: lib_backup::CliCommand::Backup(lib_backup::CliBackupCommand::Scheduled),
     }
 }
 
-pub(crate) fn make_config(test: &testing::Test, source_version: u8) -> lib_backup::config::BackupConfig {
+pub(crate) fn make_config(test: &testing::Test, source_version: u8) -> lib_backup::BackupConfig {
     let user = cross::PLATFORM.access().current_user().unwrap();
     let username = user.username().try_into_utf8().unwrap();
     let usergroup = cross::PLATFORM.access()
         .user_primary_group(&user).unwrap().expect("group")
         .groupname().try_into_utf8().unwrap();
-    lib_backup::config::BackupConfig {
+    lib_backup::BackupConfig {
         backup_storage_dir: test.temp_dir().join(STRG_SOURCETRAIT_BACKUP)
             .to_str().unwrap().to_string(),
         storage_admin_user: username.to_string(),
         backup_users_group: usergroup.to_string(),
         schedules: vec![
-            lib_backup::config::BackupConfigSchedule {
+            lib_backup::BackupConfigSchedule {
                 name: "minutely".to_string(),
                 minute: None,
                 minutes: Some(vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
@@ -91,7 +90,7 @@ pub(crate) fn make_config(test: &testing::Test, source_version: u8) -> lib_backu
         remotes: vec![],
         remote_groups: vec![],
         backups: vec![
-            lib_backup::config::BackupConfigBackup {
+            lib_backup::BackupConfigBackup {
                 name: "home".to_string(),
                 source_dir: GROUP_TESTLIB.fixture_dir()
                     .join(MOCK_FS_DIRNAME)
@@ -132,16 +131,16 @@ pub(crate) fn setup_incremental_backup_test(test: &mut testing::Test) {
     let backup_output = match results.pop().unwrap() {
         lib_backup::JobOutput::Backup(job) => job, _ => panic!() };
 
-    let earlier_run_name = lib_backup::backup::BackupRunName::new(
+    let earlier_run_name = lib_backup::BackupRunName::new(
         chrono::Local::now().checked_sub_signed(chrono::Duration::minutes(1)).unwrap(),
         &hostname,
         &username,
         &config.backups[0].name,
     );
 
-    let earlier_backup_run_dir = lib_backup::paths::SourceTraitBackupPath::backup(
+    let earlier_backup_run_dir = lib_backup::SourceTraitBackupPath::backup(
         test.temp_dir().join(STRG_SOURCETRAIT_BACKUP),
-        lib_backup::backup::BackupType::Full,
+        lib_backup::BackupType::Full,
         &earlier_run_name);
 
     fs::rename(&backup_output.dest_dir, earlier_backup_run_dir).unwrap();
@@ -164,20 +163,20 @@ pub(crate) fn resolve_test_remote() -> &'static lib_backup::Remote {
             name: "sshd-test".to_string(),
             host: host.clone(),
             user: None,
-            platform: lib_backup::Platform::GNU,
+            platform: lib_backup::SyncPlatform::GNU,
         }
     })
 }
 
 /// Creates the necessary backup directories on the remote
-pub(crate) fn setup_test_remote(config: &lib_backup::config::BackupConfig) -> lib_backup::config::BackupConfigRemote {
+pub(crate) fn setup_test_remote(config: &lib_backup::BackupConfig) -> lib_backup::BackupConfigRemote {
     let remote = resolve_test_remote();
-    let temp_dir = lib_backup::cmd::ssh_run::ssh_temp_dir(&remote).unwrap();
+    let temp_dir = lib_backup::ssh_temp_dir(&remote).unwrap();
     let storage_dir = lib_backup::SourceTraitBackupPath::RemoteStorageDir { remote: remote.clone(), storage_dir: temp_dir.join(STRG_SOURCETRAIT_BACKUP) };
 
     storage_dir.setup(config).unwrap();
 
-    lib_backup::config::BackupConfigRemote {
+    lib_backup::BackupConfigRemote {
         name: remote.name.clone(),
         host: remote.host.clone(),
         user: remote.user.clone(),
@@ -186,7 +185,7 @@ pub(crate) fn setup_test_remote(config: &lib_backup::config::BackupConfig) -> li
     }
 }
 
-pub(crate) fn teardown_test_remote(cfg_remote: &lib_backup::config::BackupConfigRemote) {
+pub(crate) fn teardown_test_remote(cfg_remote: &lib_backup::BackupConfigRemote) {
     let dir = PathBuf::from(&cfg_remote.backup_storage_dir)
         .parent().unwrap()
         .parent().unwrap().to_path_buf();
@@ -195,7 +194,7 @@ pub(crate) fn teardown_test_remote(cfg_remote: &lib_backup::config::BackupConfig
     let parent_dir = dir.parent().unwrap();
     assert_eq!(parent_dir, PathBuf::from("/tmp"), "DANGER: Attempting to delete non-temporary directory!");
 
-    lib_backup::cmd::ssh_run::ssh_delete_dir(
+    lib_backup::ssh_delete_dir(
         &cfg_remote.into(),
         &dir
     ).unwrap();
@@ -203,14 +202,14 @@ pub(crate) fn teardown_test_remote(cfg_remote: &lib_backup::config::BackupConfig
 
 pub(crate) fn make_sync_config(
     test: &testing::Test,
-    cfg_remote: &lib_backup::config::BackupConfigRemote,
+    cfg_remote: &lib_backup::BackupConfigRemote,
     source_version: u8
-) -> lib_backup::config::BackupConfig {
+) -> lib_backup::BackupConfig {
     let mut config = make_config(test, source_version);
     config.remotes = vec![ cfg_remote.clone() ];
 
     config.backups[0].syncs = vec![
-        lib_backup::config::BackupConfigSync {
+        lib_backup::BackupConfigSync {
             remote: Some("sshd-test".to_string()),
             remote_group: None,
             sync_full: true,
@@ -240,7 +239,7 @@ pub(crate) fn assert_remote_backup_synced(
     _test: &testing::Test,
     backup_type: lib_backup::BackupType,
     source_num: u8,
-    remote_cfg: &lib_backup::config::BackupConfigRemote,
+    remote_cfg: &lib_backup::BackupConfigRemote,
     output: &lib_backup::SyncBackupJobOutput
 ) {
     let hostname = cross::PLATFORM.net().hostname().unwrap();
@@ -258,10 +257,10 @@ pub(crate) fn assert_remote_backup_synced(
     assert_eq!(expected_dir, output.remote_dest_dir.as_path());
 
     // remotely test to see if the expected dir exists
-    assert!(lib_backup::cmd::ssh_run::ssh_dirs_exist(&output.remote, &vec![&expected_dir]).unwrap());
+    assert!(lib_backup::ssh_dirs_exist(&output.remote, &vec![&expected_dir]).unwrap());
 
     // compare sha256sum manifest between testing source and remote destination
-    let remote_manifest = lib_backup::cmd::ssh_run::ssh_dir_manifest(&output.remote, &expected_dir).unwrap();
+    let remote_manifest = lib_backup::ssh_dir_manifest(&output.remote, &expected_dir).unwrap();
     let expected_manifest = fs::read_to_string(GROUP_TESTLIB.fixture_dir()
         .join(MOCK_FS_DIRNAME)
         .join(format!("{}{source_num}", SOURCE_PREFIX))
@@ -271,7 +270,7 @@ pub(crate) fn assert_remote_backup_synced(
 
 pub(crate) fn assert_remote_archive_synced(
     _test: &testing::Test,
-    remote_cfg: &lib_backup::config::BackupConfigRemote,
+    remote_cfg: &lib_backup::BackupConfigRemote,
     archive_output: &lib_backup::ArchiveJobOutput,
     output: &lib_backup::SyncArchiveJobOutput
 ) {
@@ -280,34 +279,34 @@ pub(crate) fn assert_remote_archive_synced(
     assert_eq!(remote_cfg.name, output.remote.name);
 
     let expected_filepath = PathBuf::from(&remote_cfg.backup_storage_dir)
-        .join(lib_backup::paths::consts::BACKUP_ARCHIVE_DIRNAME)
+        .join(lib_backup::BACKUP_ARCHIVE_DIRNAME)
         .join(&*username)
         .join(&*hostname)
         .join(output.backup_run_name.datetime.format("%Y").to_string())
         .join(output.backup_run_name.datetime.format("%m").to_string())
         .join(output.backup_run_name.datetime.format("%d").to_string())
         .join(output.backup_run_name.to_string())
-        .with_extension(lib_backup::paths::consts::TAR_XZ_EXTENSION);
+        .with_extension(lib_backup::TAR_XZ_EXTENSION);
     assert_eq!(expected_filepath, output.remote_dest_filepath.as_path());
 
     let expected_checksum_filepath = PathBuf::from(&remote_cfg.backup_storage_dir)
-        .join(lib_backup::paths::consts::BACKUP_ARCHIVE_DIRNAME)
+        .join(lib_backup::BACKUP_ARCHIVE_DIRNAME)
         .join(&*hostname)
         .join(&*username)
         .join(output.backup_run_name.datetime.format("%Y").to_string())
         .join(output.backup_run_name.datetime.format("%m").to_string())
         .join(output.backup_run_name.datetime.format("%d").to_string())
         .join(output.backup_run_name.to_string())
-        .with_extension(format!("{}.{}", lib_backup::paths::consts::TAR_XZ_EXTENSION, lib_backup::paths::consts::SHA256_EXTENSION));
+        .with_extension(format!("{}.{}", lib_backup::TAR_XZ_EXTENSION, lib_backup::SHA256_EXTENSION));
     assert_eq!(expected_checksum_filepath, output.remote_dest_checksum_filepath.as_path());
 
     // remotely test to see if the expected dir exists
-    assert!(lib_backup::cmd::ssh_run::ssh_files_exist(&output.remote, &vec![
+    assert!(lib_backup::ssh_files_exist(&output.remote, &vec![
         &expected_filepath,
         &expected_checksum_filepath]).unwrap());
 
     // compare sha256sum manifest between testing source and remote destination
-    let remote_checksum = lib_backup::cmd::ssh_run::ssh_file_contents(&output.remote, &expected_checksum_filepath)
+    let remote_checksum = lib_backup::ssh_file_contents(&output.remote, &expected_checksum_filepath)
         .unwrap().unwrap()
         .split_ascii_whitespace()
         .next().unwrap().to_string();

@@ -3,14 +3,13 @@
 //! - Context directories (host, user, etc.):
 //!   - host: Owned by root:bakusr if the group exists, otherwise current_user:current_user. Mode: 750
 //!   - user: Owned by user:user. Mode: 700
-
 use crate::*;
-use crate::{error::*, config::*};
 
+#[allow(dead_code)] //todo
 pub const GROUP_BACKUP_USERNAME: &'static str = "bakusr";
 
 /// Returns UID 0 (root) if the `bakusr` group exists, otherwise the current user's UID.
-pub fn storage_admin_aid(config: &BackupConfig) -> Result<cross::AccessIdRef<'static>> {
+pub fn storage_admin_aid(config: &BackupConfig) -> BackupResult<cross::AccessIdRef<'static>> {
     static AID: OnceLock<Option<cross::AccessId>> = OnceLock::new();
     let aid = AID.get_or_init(|| {
         let Ok(user) = &config.get_storage_admin_user() else {
@@ -28,11 +27,11 @@ pub fn storage_admin_aid(config: &BackupConfig) -> Result<cross::AccessIdRef<'st
     });
 
     aid.as_ref().map(|id| id.as_aid())
-        .ok_or_else(|| Error::AccountNotFound { account_type: Error::ACCOUNT_USER, account: config.storage_admin_user.clone()})
+        .ok_or_else(|| BackupError::AccountNotFound { account_type: BackupError::ACCOUNT_USER, account: config.storage_admin_user.clone()})
 }
 
 /// Returns the GID for the `bakusr` group if it exists, otherwise None.
-pub fn backup_users_id(config: &BackupConfig) -> Result<cross::AccessIdRef<'static>> {
+pub fn backup_users_id(config: &BackupConfig) -> BackupResult<cross::AccessIdRef<'static>> {
     static AID: OnceLock<Option<cross::AccessId>> = OnceLock::new();
     let aid = AID.get_or_init(|| {
         let Ok(group) = &config.get_backup_users_group() else {
@@ -50,11 +49,11 @@ pub fn backup_users_id(config: &BackupConfig) -> Result<cross::AccessIdRef<'stat
     });
 
     aid.as_ref().map(|aid| aid.as_aid())
-        .ok_or_else(|| Error::AccountNotFound { account_type: Error::ACCOUNT_GROUP, account: config.backup_users_group.clone()})
+        .ok_or_else(|| BackupError::AccountNotFound { account_type: BackupError::ACCOUNT_GROUP, account: config.backup_users_group.clone()})
 }
 
 /// Returns the GID for the `bakusr` group if it exists, otherwise None.
-pub fn backup_users_group(config: &BackupConfig) -> Result<&'static cross::UserGroup> {
+pub fn backup_users_group(config: &BackupConfig) -> BackupResult<&'static cross::UserGroup> {
     static AID: OnceLock<cross::UserGroup> = OnceLock::new();
     let group = AID.get_or_init(|| {
         let group_name = &config.get_backup_users_group().expect("Unable to lookup backup users group");
@@ -68,6 +67,7 @@ pub fn backup_users_group(config: &BackupConfig) -> Result<&'static cross::UserG
     Ok(group)
 }
 
+#[allow(dead_code)] //todo
 pub fn user_aid() -> cross::AccessIdRef<'static> {
     static UID: OnceLock<cross::AccessId> = OnceLock::new();
     let aid = UID.get_or_init(|| {
@@ -81,6 +81,7 @@ pub fn user_aid() -> cross::AccessIdRef<'static> {
     aid.as_aid()
 }
 
+#[allow(dead_code)] //todo
 pub fn group_aid() -> cross::Capable<cross::PrimaryUserGroupsCapable, cross::AccessIdRef<'static>> {
     static AID: OnceLock<cross::Capable<cross::PrimaryUserGroupsCapable, cross::AccessId>> = OnceLock::new();
     let aid = AID.get_or_init(|| {
@@ -99,7 +100,7 @@ pub fn group_aid() -> cross::Capable<cross::PrimaryUserGroupsCapable, cross::Acc
 }
 
 /// We perform a custom lookup for $GROUP if it can't be expanded
-pub fn expand_env(s: &str) -> Result<Cow<'_, str>> {
+pub fn expand_env(s: &str) -> BackupResult<Cow<'_, str>> {
     const GROUP: &'static str = "GROUP";
     let groupname = os_snapshot().current_user_primary_groupname();
     
@@ -124,6 +125,6 @@ pub fn expand_env(s: &str) -> Result<Cow<'_, str>> {
     
     match expanded {
         Ok(s) => Ok(s),
-        Err(e) => Err(Error::Generic { msg: format!("Unable to expand environment variables for: {s} :: {}", e) })
+        Err(e) => Err(BackupError::Generic { msg: format!("Unable to expand environment variables for: {s} :: {}", e) })
     }
 }

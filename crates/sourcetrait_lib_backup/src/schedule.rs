@@ -1,5 +1,6 @@
-use chrono::TimeZone;
+use crate::*;
 
+#[allow(dead_code)] //todo
 pub const DATESTAMP_FORMAT: &'static str = "%Y-%m-%d";
 pub const DATETIMESTAMP_FORMAT: &'static str = "%Y-%m-%d-%H-%M-%S-%3f";
 
@@ -19,6 +20,7 @@ pub fn datetimestamp_now() -> String {
         .to_string()
 }
 
+#[allow(dead_code)] //todo
 pub fn datetimestamp_yesterday() -> String {
     let yesterday = chrono::Local::now() - chrono::Duration::days(1);
     yesterday
@@ -30,12 +32,14 @@ pub fn datetime_now() -> chrono::DateTime<chrono::Local> {
     chrono::Local::now()
 }
 
+#[allow(dead_code)] //todo
 pub fn datestamp_today() -> String {
     chrono::Local::now()
         .format(DATESTAMP_FORMAT)
         .to_string()
 }
 
+#[allow(dead_code)] //todo
 pub fn datestamp_yesterday() -> String {
     let yesterday = chrono::Local::now() - chrono::Duration::days(1);
     yesterday

@@ -1,20 +1,17 @@
-use std::{fs, io::Write, path::Path};
-use colored::Colorize;
-use crate::{error::*, log::*, config::*, cli::*, paths::*};
 use crate::*;
 
-pub(crate) fn run_config(cli: &Cli, subcmd: &ConfigCommand) -> Result<bool> {
+pub(crate) fn run_config(cli: &Cli, subcmd: &CliConfigCommand) -> BackupResult<bool> {
     let config_path = select_config_path(&cli)?;
     match subcmd {
-        ConfigCommand::Setup => run_config_setup(&config_path, cli.force),
-        ConfigCommand::Edit => run_config_edit(&config_path),
-        ConfigCommand::Verify => run_config_verify(&config_path),
-        ConfigCommand::Install => run_config_install(&config_path),
-        ConfigCommand::Show => run_config_show(&config_path),
+        CliConfigCommand::Setup => run_config_setup(&config_path, cli.force),
+        CliConfigCommand::Edit => run_config_edit(&config_path),
+        CliConfigCommand::Verify => run_config_verify(&config_path),
+        CliConfigCommand::Install => run_config_install(&config_path),
+        CliConfigCommand::Show => run_config_show(&config_path),
     }
 }
 
-fn run_config_setup(config_path: &Path, force: bool) -> Result<bool> {
+fn run_config_setup(config_path: &Path, force: bool) -> BackupResult<bool> {
     if config_path.exists() {
         println!("Verifying config file: {}", config_path.tikn_path());
         return run_config_verify(config_path);
@@ -29,11 +26,11 @@ fn run_config_setup(config_path: &Path, force: bool) -> Result<bool> {
     }
 
     let config_dir = config_path.parent()
-        .ok_or_else(|| Error::file_io_err(config_path, "Unable to determine config file parent directory"))?;
+        .ok_or_else(|| BackupError::file_io_err(config_path, "Unable to determine config file parent directory"))?;
     fs::create_dir_all(config_dir)
-        .map_err(|e| Error::file_io(e, config_dir, "Failed to create config path directories"))?;
+        .map_err(|e| BackupError::file_io(e, config_dir, "Failed to create config path directories"))?;
     fs::write(config_path, CONFIG_DEFAULTS)
-        .map_err(|e| Error::file_io(e, config_path, "Failed to write default config"))?;
+        .map_err(|e| BackupError::file_io(e, config_path, "Failed to write default config"))?;
 
     println!("Config file created: {}", config_path.tikn_path());
     println!("Edit your config with {}\nValidate your config with {}",
@@ -46,7 +43,7 @@ fn run_config_setup(config_path: &Path, force: bool) -> Result<bool> {
     }
 }
 
-fn confirm(question: &str) -> Result<bool> {
+fn confirm(question: &str) -> BackupResult<bool> {
     print!("{} {question} {} ", "confirm:".tikn_confirm(), "[y/N]:".tikn_prompt());
 
     std::io::stdout().flush()
@@ -62,15 +59,15 @@ fn confirm(question: &str) -> Result<bool> {
     }
 }
 
-fn run_config_edit(config_path: &Path) -> Result<bool> {
+fn run_config_edit(config_path: &Path) -> BackupResult<bool> {
     eprintln!("Launching editor for config file: {}", config_path.tikn_path());
 
     let output = cross::PLATFORM.cmd().open_with_editor(config_path, false)
-        .map_err(|e| Error::msg(format!("Failed to run editor :: {e}")))?
+        .map_err(|e| BackupError::msg(format!("Failed to run editor :: {e}")))?
         .take_output().expect("output");
 
     if !output.status.success() {
-        return Err(Error::msg(format!("Failed to run editor :: {}", String::from_utf8(output.stderr).unwrap())));
+        return Err(BackupError::msg(format!("Failed to run editor :: {}", String::from_utf8(output.stderr).unwrap())));
     }
 
     println!("Verifying edit");
@@ -92,7 +89,7 @@ fn handle_config_file_not_found(config_path: &Path) -> bool {
 }
 
 /// Returns the config file if it exists and is valid, otherwise returns None if the error was handled.
-fn verify_config_file(config_path: &Path) -> Result<Option<BackupConfig>> {
+fn verify_config_file(config_path: &Path) -> BackupResult<Option<BackupConfig>> {
     if handle_config_file_not_found(config_path) {
         return Ok(None);
     }
@@ -114,7 +111,7 @@ fn needs_install(config: &BackupConfig) -> bool {
 
 /// Ran with superuser privileges to install sourcetrait backup. (sudo)
 // Keep operations to a minimum to avoid security risks.
-fn run_config_install(config_path: &Path) -> Result<bool> {
+fn run_config_install(config_path: &Path) -> BackupResult<bool> {
     let config = match verify_config_file(config_path)? {
         Some(config) => config,
         None => return Ok(false), // should we tell them to run `sourcetrait backup config setup` again?
@@ -131,7 +128,7 @@ fn run_config_install(config_path: &Path) -> Result<bool> {
     Ok(true)
 }
 
-fn run_config_verify(config_path: &Path) -> Result<bool> {
+fn run_config_verify(config_path: &Path) -> BackupResult<bool> {
     println!("Config is valid.");
 
     let config = match verify_config_file(config_path)? {
@@ -148,7 +145,7 @@ fn run_config_verify(config_path: &Path) -> Result<bool> {
     }
 }
 
-fn run_config_show(config_path: &Path) -> Result<bool> {
+fn run_config_show(config_path: &Path) -> BackupResult<bool> {
     if handle_config_file_not_found(config_path) {
         return Ok(false);
     }
@@ -157,7 +154,7 @@ fn run_config_show(config_path: &Path) -> Result<bool> {
     println!("{}", header.cyan());
     println!("{:=<1$}", "".cyan(), header.chars().count());
     print!("{}", fs::read_to_string(config_path)
-        .map_err(|e| Error::msg(format!("Unable to read from config file: {} :: {e}", config_path.tikn_path())))?);
+        .map_err(|e| BackupError::msg(format!("Unable to read from config file: {} :: {e}", config_path.tikn_path())))?);
 
     Ok(true)
 }

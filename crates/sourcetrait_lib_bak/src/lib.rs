@@ -27,6 +27,7 @@
 pub mod cli;
 pub mod os;
 
+#[allow(unused_imports)]
 pub(crate) use std::{
     fs, io::{self, Write}, path::{Path, PathBuf}
 };

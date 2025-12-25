@@ -1,13 +1,13 @@
-use crate::{backup::*, cli::*, config::*, log::*, paths, error::*, job::*};
+use crate::*;
 
-pub fn run_backup(cli: &Cli, subcmd: &BackupCommand, config: Option<&BackupConfig>) -> JobResults {
+pub fn run_backup(cli: &Cli, subcmd: &CliBackupCommand, config: Option<&BackupConfig>) -> JobResults {
     let config = select_config!(cli, config);
     verify_environment(&config)?;
 
     match subcmd {
-        BackupCommand::Scheduled => run_backup_scheduled(cli, &config),
-        BackupCommand::Full(cmd) => run_backup_manual(cli, cmd, &config, BackupType::Full),
-        BackupCommand::Incremental(cmd) => run_backup_manual(cli, cmd, &config, BackupType::Incremental),
+        CliBackupCommand::Scheduled => run_backup_scheduled(cli, &config),
+        CliBackupCommand::Full(cmd) => run_backup_manual(cli, cmd, &config, BackupType::Full),
+        CliBackupCommand::Incremental(cmd) => run_backup_manual(cli, cmd, &config, BackupType::Incremental),
     }
 }
 
@@ -56,7 +56,7 @@ fn run_backup_manual(
 /// Verify that the runtime environment that has been configured is valid.  
 /// Verification:
 /// - Directories need to exist
-fn verify_environment(config: &BackupConfig) -> Result<()> {
+fn verify_environment(config: &BackupConfig) -> BackupResult<()> {
     paths::verify_backup_dirs(config)?;
     Ok(())
 }

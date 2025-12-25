@@ -4,8 +4,7 @@ mod testlib;
 mod tests {
     use std::{path::PathBuf, process, sync::OnceLock};
     use sourcetrait_testing::{self as testing, prelude::*};
-    use sourcetrait_lib_backup as lib_backup;
-    use lib_backup::{paths::{self, SourceTraitBackupPath}, sys::GROUP_BACKUP_USERNAME};
+    use sourcetrait_lib_backup as backup;
     use crate::testlib::GROUP_TESTLIB;
 
     use super::testlib::{self, TestlibModuleBuilder};
@@ -31,7 +30,7 @@ mod tests {
             .join(format!("{}{source_num}", testlib::SOURCE_PREFIX));
         let output = process::Command::new(BIN_EXE)
             .args(args)
-            .env(paths::consts::ENV_SOURCETRAIT_BACKUP_HOME, mock_root.join(testlib::HOME_TESTUSR))
+            .env(backup::ENV_SOURCETRAIT_BACKUP_HOME, mock_root.join(testlib::HOME_TESTUSR))
             .env(testlib::ENV_SOURCETRAIT_BACKUP_TEST_SOURCE_ROOT, &mock_root)
             .env(testlib::ENV_SOURCETRAIT_BACKUP_TEST_TMP_DIR, test.temp_dir())
             .output()
@@ -74,9 +73,8 @@ mod tests {
 
     fn setup_backup_dir(test: &mut testing::Test) {
         let config = testlib::make_config(&test, 1);
-        sourcetrait_lib_backup::run::init_os_snapshot().unwrap();
-        sourcetrait_lib_backup::run::init_log(Some(&config), None).unwrap();
-        SourceTraitBackupPath::StorageDir(test.temp_dir().join(testlib::STRG_SOURCETRAIT_BACKUP)).setup(&config).unwrap();
+        backup::init(Some(&config), None).unwrap();
+        backup::SourceTraitBackupPath::StorageDir(test.temp_dir().join(testlib::STRG_SOURCETRAIT_BACKUP)).setup(&config).unwrap();
     }
 
     #[tested]

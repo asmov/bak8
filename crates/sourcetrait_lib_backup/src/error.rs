@@ -1,8 +1,7 @@
 use crate::*;
-use crate::log::*;
 
 #[derive(Debug, snafu::Snafu)]
-pub enum Error {
+pub enum BackupError {
     #[snafu(display("Config file error: {path} :: {cause}"))]
     ConfigFile { path: String, cause: String },
 
@@ -54,7 +53,7 @@ pub enum Error {
     Generic { msg: String }
 }
 
-impl Error {
+impl BackupError {
     pub const ACCOUNT_GROUP: &'static str = "Group";
     pub const ACCOUNT_USER: &'static str = "User";
 
@@ -147,15 +146,15 @@ impl Error {
     }
 }
 
-pub type Result<T> = std::result::Result<T, Error>;
+pub type BackupResult<T> = std::result::Result<T, BackupError>;
 
-impl From<cross::CrossError> for Error {
+impl From<cross::CrossError> for BackupError {
     fn from(source: cross::CrossError) -> Self {
         Self::Cross { source }
     }
 }
 
-impl From<twostr::TwoStrError> for Error {
+impl From<twostr::TwoStrError> for BackupError {
     fn from(_source: twostr::TwoStrError) -> Self {
         Self::Cross { source: cross::CrossError::String  }
     }

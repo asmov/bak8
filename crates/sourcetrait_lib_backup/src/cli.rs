@@ -1,6 +1,4 @@
-use std::path::PathBuf;
-use clap::{Parser, Subcommand};
-use colored::Colorize;
+use crate::*;
 
 #[derive(Parser, Debug)]
 #[command(version, about = "Manages a rotational backup system")]
@@ -15,23 +13,23 @@ pub struct Cli {
     pub quiet: bool,
 
     #[command(subcommand)]
-    pub subcommand: Command,
+    pub subcommand: CliCommand,
 }
 
 #[derive(Subcommand, Debug)]
-pub enum Command {
+pub enum CliCommand {
     #[command(subcommand, name = "backup", about = "Performs backups as configured")]
-    Backup(BackupCommand),
+    Backup(CliBackupCommand),
     #[command(subcommand, name = "config", about = "Manages configuration")]
-    Config(ConfigCommand),
+    Config(CliConfigCommand),
     #[command(subcommand, name = "log", about = "Reviews logs")]
-    Log(LogCommand),
+    Log(CliLogCommand),
     #[command(name = "summary", alias="info", about = "Reviews a summary of recent backups")]
     Summary
 }
 
 #[derive(Subcommand, Debug)]
-pub enum BackupCommand {
+pub enum CliBackupCommand {
     #[command(name = "scheduled", alias = "cron", about = "Performs backups as scheduled")]
     Scheduled,
     #[command(name = "full", about = "Manually performs a full backup")]
@@ -47,7 +45,7 @@ pub struct ManualBackupCommand {
 }
 
 #[derive(Subcommand, Debug)]
-pub enum ConfigCommand {
+pub enum CliConfigCommand {
     #[command(name = "setup", about = "Initializes the user's backup configuration")]
     Setup,
     #[command(name = "edit", about = "Opens the backup configuration in their editor")]
@@ -61,7 +59,7 @@ pub enum ConfigCommand {
 }
 
 #[derive(Subcommand, Debug)]
-pub enum LogCommand {
+pub enum CliLogCommand {
     #[command(name = "list", about = "Lists backup log files")]
     List,
     #[command(name = "show", about = "Displays the log for a backup")]

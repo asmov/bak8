@@ -13,8 +13,8 @@ mod tests {
 
     fn setup_sync_test(
         test: &testing::Test,
-        config: &lib_backup::config::BackupConfig,
-        _cfg_remote: &lib_backup::config::BackupConfigRemote,
+        config: &lib_backup::BackupConfig,
+        _cfg_remote: &lib_backup::BackupConfigRemote,
     ) {
         testlib::setup_backup_dir(test, config);
     }

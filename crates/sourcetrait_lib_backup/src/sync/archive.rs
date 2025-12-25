@@ -1,6 +1,4 @@
-use std::path::PathBuf;
-use crate::{backup::*, config::*, cmd::ssh_run, error::*, job::*, log::*, paths::*};
-use super::Remote;
+use crate::*;
 
 #[derive(Debug)]
 pub struct SyncArchiveJob {
@@ -13,7 +11,7 @@ pub struct SyncArchiveJob {
 impl JobTrait for SyncArchiveJob {
     type Output = SyncArchiveJobOutput;
 
-    fn run(&self, _config: &BackupConfig) -> Result<JobOutput> {
+    fn run(&self, _config: &BackupConfig) -> BackupResult<JobOutput> {
         log_info!("Began uploading archive of {} to remote {}",
             self.backup_run_name.catalogue.tik_name(), self.remote.name.tik_name());
         
@@ -40,16 +38,16 @@ impl JobTrait for SyncArchiveJob {
 }
 
 impl SyncArchiveJob {
-    fn prepare_remote_dirs(&self) -> Result<()> {
+    fn prepare_remote_dirs(&self) -> BackupResult<()> {
         let dir = self.remote_dest_filepath.parent()
-            .ok_or_else(|| Error::file_io_err(&self.remote_dest_filepath, "Failed to get parent directory"))?;
+            .ok_or_else(|| BackupError::file_io_err(&self.remote_dest_filepath, "Failed to get parent directory"))?;
 
         let created = crate::cmd::ssh_run::ssh_make_dirs(&self.remote, &vec![dir])
-            .map_err(|e| Error::msg(format!("Failed to create remote directories: {}", e)))?;
+            .map_err(|e| BackupError::msg(format!("Failed to create remote directories: {}", e)))?;
 
         match created {
             true => Ok(()),
-            false => Err(Error::msg(format!("Failed to create remote directory: {}", dir.to_str().unwrap())))
+            false => Err(BackupError::msg(format!("Failed to create remote directory: {}", dir.to_str().unwrap())))
         }
     }
 }

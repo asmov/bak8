@@ -1,6 +1,4 @@
-use std::path::PathBuf;
-use crate::{paths::*, config::*, error::*, log::*, job::*, backup::*, cmd::rsync};
-use super::Remote;
+use crate::*;
 
 #[derive(Debug)]
 pub struct SyncBackupJob {
@@ -16,7 +14,7 @@ pub struct SyncBackupJob {
 impl JobTrait for SyncBackupJob {
     type Output = SyncBackupJobOutput;
 
-    fn run(&self, _config: &BackupConfig) -> Result<JobOutput> {
+    fn run(&self, _config: &BackupConfig) -> BackupResult<JobOutput> {
         log_info!("Began uploading {} backup of {} to remote {}",
             self.backup_type, self.backup_run_name.catalogue.tik_name(), self.remote.name.tik_name());
 
@@ -37,7 +35,7 @@ impl JobTrait for SyncBackupJob {
         let output = rsync_cmd.output().unwrap();
 
         if !output.status.success() {
-            return Err(Error::rsync(output));
+            return Err(BackupError::rsync(output));
         }
 
         log_info!("Completed uploading {} backup of {} to {}",
@@ -56,27 +54,27 @@ impl JobTrait for SyncBackupJob {
 }
 
 impl SyncBackupJob {
-    fn verify_remote_environment(&self) -> Result<()> {
+    fn verify_remote_environment(&self) -> BackupResult<()> {
         let mut dirs: Vec<_> = backup_storage_subdirs(&self.remote_backup_storage_dir);
         dirs.insert(0, self.remote_backup_storage_dir.clone());
 
         let is_valid = crate::cmd::ssh_run::ssh_dirs_exist(&self.remote, &dirs)
-            .map_err(|e| Error::msg(format!("Failed to verify remote environment: {}", e)))?;
+            .map_err(|e| BackupError::msg(format!("Failed to verify remote environment: {}", e)))?;
 
         match is_valid {
             true => Ok(()),
-            false => Err(Error::msg(format!("Some remote directories do not exist: {:?}", dirs)))
+            false => Err(BackupError::msg(format!("Some remote directories do not exist: {:?}", dirs)))
         }
     }
 
-    fn prepare_remote_dirs(&self) -> Result<()> {
+    fn prepare_remote_dirs(&self) -> BackupResult<()> {
         let dirs = vec![self.remote_dest_dir.as_path()];
         let created = crate::cmd::ssh_run::ssh_make_dirs(&self.remote, &dirs)
-            .map_err(|e| Error::msg(format!("Failed to create remote directories: {}", e)))?;
+            .map_err(|e| BackupError::msg(format!("Failed to create remote directories: {}", e)))?;
 
         match created {
             true => Ok(()),
-            false => Err(Error::msg(format!("Failed to create remote directories: {:?}", dirs)))
+            false => Err(BackupError::msg(format!("Failed to create remote directories: {:?}", dirs)))
         }
     }
 }

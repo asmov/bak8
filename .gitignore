@@ -5,3 +5,4 @@ Cargo.lock
 *.snap
 *.bak
 *.bak.*
+.DS_Store

@@ -1,6 +1,4 @@
 use crate::*;
-use super::*;
-use crate::paths::*;
 
 impl BackupJob {
     /// Creates a backup run plan for a config item, consisting of a series of tasks to be performed in sequence.
@@ -9,7 +7,7 @@ impl BackupJob {
         backup_type: BackupType,
         cfg_backup: &BackupConfigBackup,
         config: &BackupConfig
-    ) -> Result<JobQueueEntry> {
+    ) -> BackupResult<JobQueueEntry> {
         let osnap = os_snapshot();
         let hostname = osnap.hostname();
         let username = osnap.current_username();

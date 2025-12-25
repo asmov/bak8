@@ -1,7 +1,4 @@
 use crate::*;
-use chrono::Timelike;
-use colored::Colorize;
-use crate::{consts, config::*, schedule::*, paths, cli::*};
 
 fn make_log_prefix(topic: &str, prefix: Option<&str>, color: colored::Color) -> String {
     let now = chrono::Local::now();
@@ -57,6 +54,7 @@ pub trait TikColor {
         self.tik_color(colored::Color::BrightCyan)
     }
 
+    #[allow(dead_code)]
     fn tikn_name(&self) -> String {
         self.tikless_color(colored::Color::BrightCyan)
     }
@@ -172,7 +170,7 @@ impl Log {
     fn new(config: Option<&BackupConfig>, cli: Option<&Cli>) -> Self {
         let quiet = match cli {
             Some(cli) => match cli.subcommand {
-                Command::Backup(BackupCommand::Scheduled) => true,
+                CliCommand::Backup(CliBackupCommand::Scheduled) => true,
                 _ => cli.quiet
             },
             None => false
@@ -185,7 +183,7 @@ impl Log {
         if let Some(config) = config {
             let filename = format!("{}__{}__{}.log", datetimestamp_now(), &hostname, &username);
             let path = config.backup_storage_dir_path()
-                .join(paths::consts::BACKUP_LOGS_DIRNAME)
+                .join(BACKUP_LOGS_DIRNAME)
                 .join(filename);
 
             match std::fs::write(&path, "") {
@@ -209,14 +207,17 @@ impl Log {
         self.write(&log_msg);
     }
 
+    #[allow(dead_code)]
     pub fn line(&self, msg: &str) {
         println!("{}", msg.strip_tik());
     }
 
+    #[allow(dead_code)]
     pub fn eline(&self, msg: &str) {
         eprintln!("{}", msg.strip_tik());
     }
 
+    #[allow(dead_code)]
     pub fn out(&self, msg: &str) {
         print!("{}", msg.strip_tik());
     }
@@ -253,6 +254,7 @@ impl Log {
     }
 }
 
+#[macro_export]
 macro_rules! log_info {
     ($($arg:tt)*) => {
         Log::get().info(&format!($($arg)*));

@@ -1,8 +1,7 @@
 //! Each [Job] is a unit of work. Each has an associated [JobPlan], [JobInput], a [JobOutput]. A job is initialized with a
 //! [JobPlan]. When it is time to task the job out, the [JobPlan] is used to create a [JobInput], which finalizes exactly what
 //! the Job will do.
-
-use crate::{config::*, error::*};
+use crate::*;
 
 #[derive(strum::Display, Debug)]
 #[strum(serialize_all = "snake_case")]
@@ -14,7 +13,7 @@ pub enum Job {
 }
 
 impl Job {
-    pub fn run(&self, config: &BackupConfig) -> Result<JobOutput> {
+    pub fn run(&self, config: &BackupConfig) -> BackupResult<JobOutput> {
         match self {
             Job::Backup(job) => job.run(config),
             Job::Archive(job) => job.run(config),
@@ -42,10 +41,10 @@ pub enum JobOutput {
 }
 
 pub type JobQueue = Vec<JobQueueEntry>;
-pub type JobResults = Result<Vec<JobOutput>>;
+pub type JobResults = BackupResult<Vec<JobOutput>>;
 
 pub enum JobQueueEntry {
-    Job { job: Job, status: JobStatus, result: Option<Result<JobOutput>> },
+    Job { job: Job, status: JobStatus, result: Option<BackupResult<JobOutput>> },
     Series(JobQueue),
 }
 
@@ -56,7 +55,7 @@ pub trait JobTrait {
         true
     }
 
-    fn run(&self, config: &BackupConfig) -> Result<JobOutput>;
+    fn run(&self, config: &BackupConfig) -> BackupResult<JobOutput>;
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, strum::Display)]
@@ -90,7 +89,7 @@ pub fn run_jobs(mut queue: JobQueue, config: &BackupConfig) -> JobResults {
     flatten_queue_results(queue)
 }
 
-fn run_job_entry(queue: &mut JobQueue, config: &BackupConfig) -> Result<()> {
+fn run_job_entry(queue: &mut JobQueue, config: &BackupConfig) -> BackupResult<()> {
     for entry in queue {
         match entry {
             JobQueueEntry::Job{job, status, result} => {

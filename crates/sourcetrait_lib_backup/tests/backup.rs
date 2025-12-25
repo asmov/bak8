@@ -6,8 +6,6 @@ mod tests {
     use std::os::unix::fs::PermissionsExt;
     use sourcetrait_testing::{self as testing, prelude::*};
     use sourcetrait_lib_backup as lib_backup;
-    use lib_backup::log::TikPath;
-    use lib_backup::job::*;
     use super::testlib::{self, TestlibModuleBuilder};
 
     static TESTING: testing::Module = testing::module!(Integration, {
@@ -28,8 +26,8 @@ mod tests {
 
         let mut results = testlib::sourcetrait_backup_backup(&cli, &config).unwrap();
         assert_eq!(2, results.len());
-        let JobOutput::Archive(archive_output) = results.pop().unwrap() else { panic!() };
-        let JobOutput::Backup(backup_output) = results.pop().unwrap() else { panic!() };
+        let lib_backup::JobOutput::Archive(archive_output) = results.pop().unwrap() else { panic!() };
+        let lib_backup::JobOutput::Backup(backup_output) = results.pop().unwrap() else { panic!() };
 
         assert_eq!(testlib::expected_backup_ouput_dir(&test, lib_backup::BackupType::Full, &backup_output),
             backup_output.dest_dir.as_path());
@@ -57,7 +55,7 @@ mod tests {
         let mut results = testlib::sourcetrait_backup_backup(&cli, &config).unwrap();
 
         assert_eq!(1, results.len(), "{:#?}", results);
-        let JobOutput::Backup(backup_output) = results.pop().unwrap() else { panic!() };
+        let lib_backup::JobOutput::Backup(backup_output) = results.pop().unwrap() else { panic!() };
 
         assert_eq!(testlib::expected_backup_ouput_dir(&test, lib_backup::BackupType::Incremental,
             &backup_output), backup_output.dest_dir.as_path());
@@ -65,7 +63,7 @@ mod tests {
         let dest_dir = backup_output.dest_dir.as_path();
         assert!(!dir_diff::is_different(&backup_output.source_dir, &dest_dir).unwrap(),
             "Incremental source and destination should not be different: {} VS {}",
-            &backup_output.source_dir.tikn_path(), &dest_dir.tikn_path());
+            &backup_output.source_dir.to_string_lossy(), &dest_dir.to_string_lossy());
         assert!(dest_dir.join("source-2.txt").exists(),
             "New file: source-2.txt");
         assert_eq!("source-2 delta", fs::read_to_string(dest_dir.join("delta.txt")).unwrap(),

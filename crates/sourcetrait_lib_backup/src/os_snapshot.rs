@@ -55,11 +55,11 @@ pub(crate) fn os_snapshot() -> Arc<OsSnapshot> {
 
 #[inline]
 #[track_caller]
-pub(crate) fn os_snapshot_init(init: OsSnapshotInit) -> Result<Arc<OsSnapshot>> {
+pub(crate) fn os_snapshot_init(init: OsSnapshotInit) -> BackupResult<Arc<OsSnapshot>> {
     os_snapshot_actual(Some(Box::new(init)))
 }
 
-fn os_snapshot_actual(init: Option<Box<OsSnapshotInit>>) -> Result<Arc<OsSnapshot>> {
+fn os_snapshot_actual(init: Option<Box<OsSnapshotInit>>) -> BackupResult<Arc<OsSnapshot>> {
     static SNAPSHOT: OnceLock<Arc<OsSnapshot>> = OnceLock::new();
     
     if init.is_none() {
@@ -94,17 +94,17 @@ fn os_snapshot_actual(init: Option<Box<OsSnapshotInit>>) -> Result<Arc<OsSnapsho
     Ok(Arc::clone(SNAPSHOT.get().expect(E_INIT)))
 }
 
-fn osnap_init_hostname() -> Result<Arc<String>> {
+fn osnap_init_hostname() -> BackupResult<Arc<String>> {
     let hostname = cross::PLATFORM.net().hostname()?;
     Ok(hostname)
 }
 
-fn osnap_init_current_user() -> Result<Arc<cross::User>> {
+fn osnap_init_current_user() -> BackupResult<Arc<cross::User>> {
     let user: cross::User = cross::PLATFORM.access().current_user()?;
     Ok(Arc::new(user))
 }
 
-fn osnap_init_current_user_primary_group(user: &cross::User) -> Result<cross::Capable<cross::PrimaryUserGroupsCapable, Arc<cross::UserGroup>>> {
+fn osnap_init_current_user_primary_group(user: &cross::User) -> BackupResult<cross::Capable<cross::PrimaryUserGroupsCapable, Arc<cross::UserGroup>>> {
     let group = cross::PLATFORM.access()
         .user_primary_group(&user)?
         .map_into(Arc::new);

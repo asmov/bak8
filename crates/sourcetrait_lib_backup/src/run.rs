@@ -1,13 +1,6 @@
-pub mod backup;
-pub mod config;
-pub mod log;
-pub mod summary;
-
-use clap::Parser;
 use crate::*;
-use crate::{error::*, cli::*, config::*, log::*, run};
 
-pub fn init_log(config: Option<&BackupConfig>, cli: Option<&Cli>) -> Result<()> {
+fn init_log(config: Option<&BackupConfig>, cli: Option<&Cli>) -> BackupResult<()> {
     static DONE: OnceLock<()> = OnceLock::new();
     if DONE.get().is_none() {
         Log::init(config, cli);
@@ -17,7 +10,7 @@ pub fn init_log(config: Option<&BackupConfig>, cli: Option<&Cli>) -> Result<()> 
     Ok(())
 }
 
-pub fn init_os_snapshot() -> Result<()> {
+fn init_os_snapshot() -> BackupResult<()> {
     static DONE: OnceLock<()> = OnceLock::new();
     if DONE.get().is_none() {
         os_snapshot_init(OsSnapshotInit {})?;
@@ -27,7 +20,12 @@ pub fn init_os_snapshot() -> Result<()> {
     Ok(())
 }
 
-pub fn run_main() -> ExitCode {
+pub fn init(config: Option<&BackupConfig>, cli: Option<&Cli>) -> BackupResult<()> {
+    init_os_snapshot()?;
+    init_log(config, cli)
+}
+
+pub fn run() -> ExitCode {
     let cli = Cli::parse();
     match init_os_snapshot() {
         Ok(_) => (),
@@ -58,24 +56,24 @@ pub fn run_main() -> ExitCode {
     }
 }
 
-pub fn run_with(cli: Cli) -> Result<bool> {
+pub fn run_with(cli: Cli) -> BackupResult<bool> {
     init_os_snapshot()?;
     init_log(None, Some(&cli))?;
     match &cli.subcommand {
-        Command::Backup(subcmd) => run::backup::run_backup(&cli, subcmd, None).map(|_| Ok(true))?,
-        Command::Config(subcmd) => run::config::run_config(&cli, subcmd),
-        Command::Log(subcmd) => run::log::run_log(&cli, subcmd),
-        Command::Summary => run::summary::run_summary(&cli),
+        CliCommand::Backup(subcmd) => run_backup(&cli, subcmd, None).map(|_| Ok(true))?,
+        CliCommand::Config(subcmd) => run_config(&cli, subcmd),
+        CliCommand::Log(subcmd) => run_log(&cli, subcmd),
+        CliCommand::Summary => run_summary(&cli),
     }
 }
 
-pub fn run_with_config(cli: Cli, config: BackupConfig) -> Result<bool> {
+pub fn run_with_config(cli: Cli, config: BackupConfig) -> BackupResult<bool> {
     init_os_snapshot()?;
     init_log(Some(&config), Some(&cli))?;
     match &cli.subcommand {
-        Command::Backup(subcmd) => run::backup::run_backup(&cli, subcmd, Some(&config)).map(|_| Ok(true))?,
-        Command::Config(subcmd) => run::config::run_config(&cli, subcmd),
-        Command::Log(subcmd) => run::log::run_log(&cli, subcmd),
-        Command::Summary => run::summary::run_summary(&cli),
+        CliCommand::Backup(subcmd) => run_backup(&cli, subcmd, Some(&config)).map(|_| Ok(true))?,
+        CliCommand::Config(subcmd) => run_config(&cli, subcmd),
+        CliCommand::Log(subcmd) => run_log(&cli, subcmd),
+        CliCommand::Summary => run_summary(&cli),
     }
 }

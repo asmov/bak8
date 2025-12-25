@@ -1,11 +1,6 @@
 use crate::*;
-use validator::{Validate, ValidationError};
-use crate::{cli::*, paths::{self, SourceTraitBackupPath}, Error, Result};
 
-pub mod consts {
-    pub const CFG_BACKUP_STORAGE_DIR: &'static str = "backup_storage_dir";
-}
-
+#[macro_export]
 macro_rules! select_config {
     ($cli:ident, $config:ident) => {
         match $config {
@@ -15,7 +10,7 @@ macro_rules! select_config {
     };
 }
 
-pub fn select_config_path(cli: &Cli) -> Result<PathBuf> {
+pub fn select_config_path(cli: &Cli) -> BackupResult<PathBuf> {
     if let Some(config_path) = &cli.config_file {
         Ok(config_path.clone())
     } else {
@@ -23,13 +18,13 @@ pub fn select_config_path(cli: &Cli) -> Result<PathBuf> {
     }
 }
 
-pub fn default_config_path() -> Result<PathBuf> {
+pub fn default_config_path() -> BackupResult<PathBuf> {
     Ok(paths::home_dir()?
-        .join(paths::consts::HOME_CONFIG_DIR)
-        .join(paths::consts::SOURCETRAIT_BACKUP_CONFIG_FILENAME))
+        .join(HOME_CONFIG_DIR)
+        .join(SOURCETRAIT_BACKUP_CONFIG_FILENAME))
 }
 
-pub(crate) fn read_cli_config(cli: &Cli) -> Result<BackupConfig> {
+pub(crate) fn read_cli_config(cli: &Cli) -> BackupResult<BackupConfig> {
     match cli.config_file.as_ref() {
         Some(path) => read_config(Some(path.as_path())),
         None => read_config(None)
@@ -38,17 +33,17 @@ pub(crate) fn read_cli_config(cli: &Cli) -> Result<BackupConfig> {
 
 
 
-pub fn read_config(config_path: Option<&Path>) -> Result<BackupConfig> {
+pub fn read_config(config_path: Option<&Path>) -> BackupResult<BackupConfig> {
     let config_path = if let Some(config_path) = config_path {
         if !config_path.exists() {
-            return Err(Error::ConfigFileNotFound { path: config_path.to_str().unwrap().to_string() })
+            return Err(BackupError::ConfigFileNotFound { path: config_path.to_str().unwrap().to_string() })
         } else {
             PathBuf::from(config_path)
         }
     } else {
         let default_config_path = default_config_path()?;
         if !default_config_path.exists() {
-            return Err(Error::DefaultConfigFileNotFound { path: default_config_path.to_str().unwrap().to_string() })
+            return Err(BackupError::DefaultConfigFileNotFound { path: default_config_path.to_str().unwrap().to_string() })
         } else {
             default_config_path
         }
@@ -89,14 +84,14 @@ pub struct BackupConfig {
 }
 
 impl FromStr for BackupConfig {
-    type Err = Error;
+    type Err = BackupError;
 
-    fn from_str(config_content: &str) -> Result<Self> {
+    fn from_str(config_content: &str) -> BackupResult<Self> {
         let config: Self = toml::from_str(config_content)
-            .map_err(|e| Error::ConfigParse { cause: e.to_string() })?;
+            .map_err(|e| BackupError::ConfigParse { cause: e.to_string() })?;
 
         config.validate()
-            .map_err(|e| Error::ConfigParse { cause: e.to_string() })?;
+            .map_err(|e| BackupError::ConfigParse { cause: e.to_string() })?;
 
         Ok(config)
     }
@@ -111,11 +106,11 @@ impl BackupConfig {
         return "bakusr".to_string()
     }
 
-    pub fn read(filepath: &Path) -> Result<Self> {
+    pub fn read(filepath: &Path) -> BackupResult<Self> {
         let content = fs::read_to_string(filepath)
-            .map_err(|e| Error::config_file(filepath, e))?;
+            .map_err(|e| BackupError::config_file(filepath, e))?;
         let mut config: Self = toml::from_str(&content)
-            .map_err(|e| Error::config_file(filepath, e))?;
+            .map_err(|e| BackupError::config_file(filepath, e))?;
 
         if config.storage_admin_user.contains('$') {
             config.storage_admin_user = crate::sys::expand_env(&config.storage_admin_user)?.into_owned();
@@ -125,12 +120,12 @@ impl BackupConfig {
         }
 
         config.validate()
-            .map_err(|e| Error::config_file(filepath, e))?;
+            .map_err(|e| BackupError::config_file(filepath, e))?;
 
         Ok(config)
     }
 
-    pub fn get_storage_admin_user(&self) -> Result<Cow<'_, str>> {
+    pub fn get_storage_admin_user(&self) -> BackupResult<Cow<'_, str>> {
         if self.storage_admin_user.contains('$') {
             crate::sys::expand_env(&self.storage_admin_user)
         } else {
@@ -138,7 +133,7 @@ impl BackupConfig {
         }
     }
 
-    pub fn get_backup_users_group(&self) -> Result<Cow<'_, str>> {
+    pub fn get_backup_users_group(&self) -> BackupResult<Cow<'_, str>> {
         if self.backup_users_group.contains('$') {
             crate::sys::expand_env(&self.backup_users_group)
         } else {
@@ -146,10 +141,10 @@ impl BackupConfig {
         }
     }
 
-    pub fn read_home() -> Result<Self> {
+    pub fn read_home() -> BackupResult<Self> {
         let config_filepath = paths::home_dir()?
-            .join(paths::consts::HOME_CONFIG_DIR)
-            .join(paths::consts::SOURCETRAIT_BACKUP_CONFIG_FILENAME);
+            .join(HOME_CONFIG_DIR)
+            .join(SOURCETRAIT_BACKUP_CONFIG_FILENAME);
         Self::read(&config_filepath)
     }
 
@@ -162,32 +157,32 @@ impl BackupConfig {
         SourceTraitBackupPath::StorageDir(self.backup_storage_dir_path())
     }
 
-    pub fn remote<'cfg>(&'cfg self, name: &str) -> Result<&'cfg BackupConfigRemote> {
+    pub fn remote<'cfg>(&'cfg self, name: &str) -> BackupResult<&'cfg BackupConfigRemote> {
         self.remotes.iter()
             .find(|r| r.name == name)
-            .ok_or_else(|| Error::ConfigReferenceNotFound { schema: "[remote]", name: name.to_string() })
+            .ok_or_else(|| BackupError::ConfigReferenceNotFound { schema: "[remote]", name: name.to_string() })
     }
 
-    pub fn remote_group<'cfg>(&'cfg self, name: &str) -> Result<&'cfg BackupConfigRemoteGroup> {
+    pub fn remote_group<'cfg>(&'cfg self, name: &str) -> BackupResult<&'cfg BackupConfigRemoteGroup> {
         self.remote_groups.iter()
             .find(|r| r.name == name)
-            .ok_or_else(|| Error::ConfigReferenceNotFound { schema: "[remote_group]", name: name.to_string() })
+            .ok_or_else(|| BackupError::ConfigReferenceNotFound { schema: "[remote_group]", name: name.to_string() })
     }
 
-    pub fn schedule<'cfg>(&'cfg self, schedule_name: &str) -> Result<&'cfg BackupConfigSchedule> {
+    pub fn schedule<'cfg>(&'cfg self, schedule_name: &str) -> BackupResult<&'cfg BackupConfigSchedule> {
         if let Some(schedule) = self.schedules.iter().find(|s| s.name == schedule_name) {
             return Ok(schedule);
         }
 
         DEFAULT_SCHEDULES.iter()
             .find(|s| s.name == schedule_name)
-           .ok_or_else(|| Error::ConfigReferenceNotFound { schema: "[schedule]", name: schedule_name.to_string() })
+           .ok_or_else(|| BackupError::ConfigReferenceNotFound { schema: "[schedule]", name: schedule_name.to_string() })
     }
 
-    pub fn backup<'cfg>(&'cfg self, catalogue: &str) -> Result<&'cfg BackupConfigBackup> {
+    pub fn backup<'cfg>(&'cfg self, catalogue: &str) -> BackupResult<&'cfg BackupConfigBackup> {
         self.backups.iter()
             .find(|b| b.name == catalogue)
-            .ok_or_else(|| Error::ConfigReferenceNotFound { schema: "[backup]", name: catalogue.to_string() })
+            .ok_or_else(|| BackupError::ConfigReferenceNotFound { schema: "[backup]", name: catalogue.to_string() })
     }
 
     pub fn validate_schema(&self) -> std::result::Result<(), validator::ValidationError> {
@@ -372,10 +367,10 @@ impl BackupConfigBackup {
             .into()
     }
 
-    pub fn archive<'cfg>(&'cfg self, schedule_name: &str) -> Result<&'cfg BackupConfigArchive> {
+    pub fn archive<'cfg>(&'cfg self, schedule_name: &str) -> BackupResult<&'cfg BackupConfigArchive> {
         self.archives.iter()
             .find(|b| b.schedule == schedule_name)
-            .ok_or_else(|| Error::ConfigReferenceNotFound {
+            .ok_or_else(|| BackupError::ConfigReferenceNotFound {
                 schema: "Archive",
                 name: format!("{}:{}", self.name.to_string(), schedule_name.to_string())
             })
@@ -393,7 +388,7 @@ pub struct BackupConfigRemote {
     pub name: String,
     pub host: String,
     #[serde(default)]
-    pub platform: crate::sync::Platform,
+    pub platform: crate::sync::SyncPlatform,
     pub backup_storage_dir: String,
     pub user: Option<String>,
 }

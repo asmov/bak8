@@ -1,5 +1,4 @@
-use crate::{backup::*, cmd::xz, config::*, error::*, job::*, log::*, paths::*};
-use std::path::PathBuf;
+use crate::*;
 
 #[derive(Debug)]
 pub struct ArchiveJob {
@@ -21,7 +20,7 @@ pub struct ArchiveJobOutput {
 impl JobTrait for ArchiveJob {
     type Output = ArchiveJobOutput;
 
-    fn run(&self, config: &BackupConfig) -> Result<JobOutput> {
+    fn run(&self, config: &BackupConfig) -> BackupResult<JobOutput> {
         log_info!(
             "Began archiving {}",
             self.backup_run_name.catalogue.tik_name()
@@ -35,11 +34,11 @@ impl JobTrait for ArchiveJob {
         let output = tar_xz_cmd.output().unwrap();
 
         if !output.status.success() {
-            return Err(Error::rsync(output));
+            return Err(BackupError::rsync(output));
         }
 
         let checksum = sha256::try_digest(self.dest_filepath.as_path())
-            .map_err(|_| Error::Generic { msg: "Unable to checksum file".to_string() })?;
+            .map_err(|_| BackupError::Generic { msg: "Unable to checksum file".to_string() })?;
 
         let checksum_filepath = with_sha256_extension(self.dest_filepath.as_path());
         std::fs::write(
@@ -54,7 +53,7 @@ impl JobTrait for ArchiveJob {
                     .to_string_lossy()
             ),
         )
-        .map_err(|e| Error::file_io(e, &checksum_filepath, "Unable to write checksum file"))?;
+        .map_err(|e| BackupError::file_io(e, &checksum_filepath, "Unable to write checksum file"))?;
 
         log_info!(
             "Completed archiving {} to {}",

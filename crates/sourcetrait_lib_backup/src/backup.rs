@@ -1,7 +1,6 @@
 mod plan;
 
 use crate::*;
-use crate::{archive::*, cmd::rsync, config::*, error::*, job::*, log::*, paths::*, schedule::*, sync::*};
 
 #[derive(Debug, Clone)]
 pub struct BackupRunName {
@@ -53,9 +52,9 @@ impl From<BackupRunName> for String {
 }
 
 impl FromStr for BackupRunName {
-    type Err = Error;
+    type Err = BackupError;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> BackupResult<Self> {
         let parts = s.split("__").collect::<Vec<&str>>();
         let datetime = from_datetimestamp(parts[0]);
         let hostname = parts[1];
@@ -85,7 +84,7 @@ pub struct BackupJob {
 impl JobTrait for BackupJob {
     type Output = BackupJobOutput;
 
-    fn run(&self, config: &BackupConfig) -> Result<JobOutput> {
+    fn run(&self, config: &BackupConfig) -> BackupResult<JobOutput> {
         log_info!("Began {} backup of {}", self.backup_type, self.run_name.catalogue.tik_name());
 
         self.dest_dir.prepare(config)?;
@@ -101,7 +100,7 @@ impl JobTrait for BackupJob {
         let output = rsync_cmd.output().unwrap();
 
         if !output.status.success() {
-            return Err(Error::rsync(output));
+            return Err(BackupError::rsync(output));
         }
 
         log_info!("Completed {} backup of {} to {}",
@@ -130,7 +129,7 @@ pub struct BackupJobOutput {
 impl JobOutputTrait for BackupJobOutput {}
 
 
-fn find_last_backup<P: AsRef<Path>>(
+pub(crate) fn find_last_backup<P: AsRef<Path>>(
     backup_type: BackupType,
     hostname: &str,
     username: &str,
@@ -190,7 +189,7 @@ fn find_last_backup<P: AsRef<Path>>(
 pub(crate) fn backup_job_due(
     cfg_backup: &BackupConfigBackup,
     config: &BackupConfig,
-) -> Result<Option<JobQueueEntry>> {
+) -> BackupResult<Option<JobQueueEntry>> {
     let osnap = os_snapshot();
     let hostname = osnap.hostname();
     let username = osnap.current_username();
