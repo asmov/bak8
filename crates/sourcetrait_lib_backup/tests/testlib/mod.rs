@@ -35,7 +35,8 @@ pub(crate) trait TestlibModuleBuilder {
 
 impl<'func> TestlibModuleBuilder for testing::ModuleBuilder<'func> {
     fn testlib_module_defaults(self) -> Self {
-        lib_backup::run::init(None, None).unwrap();
+        lib_backup::run::init_os_snapshot().unwrap();
+        lib_backup::run::init_log(None, None).unwrap();
         //std::env::set_var("BAK_TEST", "1");//todo
         //call GROUP_TESTLIB instead: self.import_fixture_dir(testlib_namepath());
         self.base_temp_dir(env!("CARGO_TARGET_TMPDIR"))

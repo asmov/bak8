@@ -7,11 +7,20 @@ use clap::Parser;
 use crate::*;
 use crate::{error::*, cli::*, config::*, log::*, run};
 
-pub fn init(config: Option<&BackupConfig>, cli: Option<&Cli>) -> Result<()> {
+pub fn init_log(config: Option<&BackupConfig>, cli: Option<&Cli>) -> Result<()> {
+    static DONE: OnceLock<()> = OnceLock::new();
+    if DONE.get().is_none() {
+        Log::init(config, cli);
+        DONE.get_or_init(|| ());
+    }
+    
+    Ok(())
+}
+
+pub fn init_os_snapshot() -> Result<()> {
     static DONE: OnceLock<()> = OnceLock::new();
     if DONE.get().is_none() {
         os_snapshot_init(OsSnapshotInit {})?;
-        Log::init(config, cli);
         DONE.get_or_init(|| ());
     }
     
@@ -20,6 +29,13 @@ pub fn init(config: Option<&BackupConfig>, cli: Option<&Cli>) -> Result<()> {
 
 pub fn run_main() -> ExitCode {
     let cli = Cli::parse();
+    match init_os_snapshot() {
+        Ok(_) => (),
+        Err(_) => {
+            eprintln!("Error initializing OS snapshot");
+            return ExitCode::FAILURE;
+        },
+    }
 
     if let Ok(config) = read_cli_config(&cli) {
         match run_with_config(cli, config) {
@@ -43,7 +59,8 @@ pub fn run_main() -> ExitCode {
 }
 
 pub fn run_with(cli: Cli) -> Result<bool> {
-    init(None, Some(&cli))?;
+    init_os_snapshot()?;
+    init_log(None, Some(&cli))?;
     match &cli.subcommand {
         Command::Backup(subcmd) => run::backup::run_backup(&cli, subcmd, None).map(|_| Ok(true))?,
         Command::Config(subcmd) => run::config::run_config(&cli, subcmd),
@@ -53,7 +70,8 @@ pub fn run_with(cli: Cli) -> Result<bool> {
 }
 
 pub fn run_with_config(cli: Cli, config: BackupConfig) -> Result<bool> {
-    init(Some(&config), Some(&cli))?;
+    init_os_snapshot()?;
+    init_log(Some(&config), Some(&cli))?;
     match &cli.subcommand {
         Command::Backup(subcmd) => run::backup::run_backup(&cli, subcmd, Some(&config)).map(|_| Ok(true))?,
         Command::Config(subcmd) => run::config::run_config(&cli, subcmd),
